@@ -4,6 +4,8 @@ var path = require('path');
 
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
+
 
 module.exports = {
     devtool: 'inline-source-map',
@@ -38,6 +40,7 @@ module.exports = {
         }),
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.OccurrenceOrderPlugin(),
+        new ExtractTextPlugin("[name].css")
         // new webpack.optimize.UglifyJsPlugin()
       ]: [
         new HtmlWebpackPlugin({
@@ -50,7 +53,8 @@ module.exports = {
         new webpack.NoErrorsPlugin(),
         new webpack.DefinePlugin({
           'process.env.NODE_ENV': JSON.stringify('development')
-        })
+        }),
+        new ExtractTextPlugin("[name].css"),
       ],
 
 
@@ -65,6 +69,11 @@ module.exports = {
             test: /\.jsx?$/,
             exclude: /node_modules/,
             loaders: ['react-hot', 'babel?presets[]=react']
-        }]
+        },
+        { 
+            test: /\.css$/, 
+            loader: ExtractTextPlugin.extract("style-loader", "css-loader")
+        }
+        ]
     }
 };

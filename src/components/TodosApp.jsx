@@ -116,7 +116,7 @@ var TodosApp = React.createClass({
 
         return (
             <div>
-                <h2>MY TODO APP</h2>
+                <h1>MY TODO APP</h1>
                 <CreateTask createTask = {this.createTask}/>
                 <TaskList tasks = {this.state.tasks} editTask = {this.editTask} deleteTask = {this.deleteTask}/>
             </div>

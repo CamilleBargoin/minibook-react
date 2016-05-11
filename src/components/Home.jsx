@@ -1,18 +1,24 @@
 var React = require('react');
-
+var NavBar = require('./NavBar.jsx');
+var FriendBoxContainer = require('./FriendBoxContainer.jsx');
 
 
 var Home = React.createClass({
 
-  getInitialState: function() {
+  getInitialState() {
     return {
-      test: 'foo'
+    
     };
   },
-  render: function() {
+
+  
+
+  render() {
     return (
-      <div >
-        <h2> HOME !!!!</h2>
+      <div>
+         <NavBar />
+         <FriendBoxContainer />
+
       </div>
     );
   }

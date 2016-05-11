@@ -1,0 +1,128 @@
+/* 
+    Green: #26ff6e
+    Blue: #039be5
+    dark grey: #202020
+*/
+
+
+
+body {
+    background-color: #202020;
+}
+
+
+#homePage h1.appTitle {
+    text-align: center;
+    color: #26ff6e;
+}
+
+
+#homePage {
+    color: white;
+}
+
+
+#homePage p {
+    text-align: center;
+}
+
+#homePage a.changeBox {
+    padding: 0 5px;
+    cursor: pointer;
+}
+
+
+
+
+.friendBox {
+    width: 100px;
+    height: 100px;
+    margin: 0;
+    padding: 0;
+   display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+.friendBox p {
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    position: absolute;
+}
+
+
+#userProfile .background {
+    width: 100%;
+    height: 400px;
+    background-image: url("/images/user-background1.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+.postNewFeedBox {
+    padding-top: 220px;
+}
+
+/*.wallFeed.card-panel {
+    background-color: white;
+}*/
+
+input:not([type]),
+input[type=text],
+input[type=password],
+input[type=email],
+input[type=url],
+input[type=time],
+input[type=date],
+input[type=datetime],
+input[type=datetime-local],
+input[type=tel],
+input[type=number],
+input[type=search],
+textarea.materialize-textarea {
+        border-bottom: 1px solid #fff;
+}
+
+input:not([type]):focus:not([readonly]),
+input[type=text]:focus:not([readonly]),
+input[type=password]:focus:not([readonly]),
+input[type=email]:focus:not([readonly]),
+input[type=url]:focus:not([readonly]),
+input[type=time]:focus:not([readonly]),
+input[type=date]:focus:not([readonly]),
+input[type=datetime]:focus:not([readonly]),
+input[type=datetime-local]:focus:not([readonly]),
+input[type=tel]:focus:not([readonly]),
+input[type=number]:focus:not([readonly]),
+input[type=search]:focus:not([readonly]),
+textarea.materialize-textarea:focus:not([readonly]) {
+        border-bottom: 1px solid #26ff6e;
+        box-shadow: 0 1px 00 #26ff6e;
+}
+
+.input-field label {
+    color: white;
+}
+
+input:not([type]):focus:not([readonly])+label,
+input[type=text]:focus:not([readonly])+label,
+input[type=password]:focus:not([readonly])+label,
+input[type=email]:focus:not([readonly])+label,
+input[type=url]:focus:not([readonly])+label,
+input[type=time]:focus:not([readonly])+label,
+input[type=date]:focus:not([readonly])+label,
+input[type=datetime]:focus:not([readonly])+label,
+input[type=datetime-local]:focus:not([readonly])+label,
+input[type=tel]:focus:not([readonly])+label,
+input[type=number]:focus:not([readonly])+label,
+input[type=search]:focus:not([readonly])+label,
+textarea.materialize-textarea:focus:not([readonly])+label {
+    color: white;
+}
+
+
+.card-panel {
+    background-color: #202020;
+}

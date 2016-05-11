@@ -1,3 +1,4 @@
+
 var React = require('react');
 var ReactDOM = require('react-dom');
 
@@ -9,6 +10,7 @@ var IndexRoute = require('react-router').IndexRoute;
 var routes = require('./routes.jsx');
 
 
+var css = require("./main.css");
 
 
 ReactDOM.render((

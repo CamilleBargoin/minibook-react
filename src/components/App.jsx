@@ -11,16 +11,15 @@ var App = React.createClass({
   },
   render: function() {
     return (
-      <div>
-        <h1>React Router Tutorial</h1>
+      <div >
+        {/*<h1>React Router Tutorial</h1>
         <ul role="nav">
           <li><NavLink to="/" onlyActiveOnIndex={true}>Home</NavLink></li>
           <li><NavLink to="/users" >Users</NavLink></li>
           <li><NavLink to="/todos" >Todos</NavLink></li>
         </ul>
-
+        */}
         {this.props.children}
-
       </div>
     );
   }
