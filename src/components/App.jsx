@@ -11,7 +11,7 @@ var App = React.createClass({
   },
   render: function() {
     return (
-      <div >
+      <div style={{height:"100%"}}>
         {/*<h1>React Router Tutorial</h1>
         <ul role="nav">
           <li><NavLink to="/" onlyActiveOnIndex={true}>Home</NavLink></li>
@@ -20,6 +20,7 @@ var App = React.createClass({
         </ul>
         */}
         {this.props.children}
+        
       </div>
     );
   }

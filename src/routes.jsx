@@ -9,7 +9,7 @@ var Landing = require('./components/Landing.jsx');
 var App = require('./components/App.jsx');
 
 var Home = require('./components/Home.jsx');
-var UserProfile = require('./components/UserProfile.jsx');
+var UserProfile = require('./components/profile/UserProfile.jsx');
 
 
 module.exports = (
