@@ -1015,8 +1015,7 @@
 	        )
 	      ),
 	      displayContent,
-	      React.createElement('div', { style: { height: "350px" } }),
-	      React.createElement(Footer, null)
+	      React.createElement('div', { style: { height: "350px" } })
 	    );
 	  }
 	});

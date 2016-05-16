@@ -59,7 +59,7 @@ var UserProfile = React.createClass({
 
           {displayContent}
           <div style={{height:"350px"}} />
-          <Footer />
+          {/*<Footer />*/}
         </div>
     );
   }
