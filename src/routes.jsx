@@ -11,6 +11,8 @@ var App = require('./components/App.jsx');
 var Home = require('./components/Home.jsx');
 var UserProfile = require('./components/profile/UserProfile.jsx');
 
+var auth = require("./auth.js");
+
 
 module.exports = (
   <Route path="/" component={App}>
@@ -19,9 +21,20 @@ module.exports = (
     </Route>
     <Route path="/todos" component={TodosApp}>
     </Route>
-    <Route path="/home" component={Home}>
+    <Route path="/home" component={Home} onEnter={requireAuth}>
     </Route>
-    <Route path="/profile" component={UserProfile}>
+    <Route path="/profile" component={UserProfile} onEnter={requireAuth}>
     </Route>
   </Route>
 );
+
+
+
+function requireAuth(nextState, replace) {
+  if (!auth.loggedIn()) {
+    replace({
+      pathname: '/',
+      state: { nextPathname: nextState.location.pathname }
+    })
+  }
+}

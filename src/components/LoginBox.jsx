@@ -12,7 +12,7 @@ var LoginBox = React.createClass({
 
   login() {
 
-    browserHistory.push('/home')
+    browserHistory.push('/home');
   },
 
   render() {

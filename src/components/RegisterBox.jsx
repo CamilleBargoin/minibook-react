@@ -1,5 +1,5 @@
 var React = require('react');
-
+var browserHistory = require('react-router').browserHistory;
 
 
 var RegisterBox = React.createClass({
@@ -10,8 +10,49 @@ var RegisterBox = React.createClass({
     };
   },
 
-  register() {
-    alert("inscription !");
+  register(e) {
+
+    e.preventDefault();
+
+    var newUser = {
+      firstName: this.refs.firstname.value,
+      lastName: this.refs.lastname.value,
+      email: this.refs.email.value,
+      password: this.refs.password.value
+    };
+    
+    console.log(newUser);
+
+
+
+    $.ajax({
+        type: 'POST',
+        url: 'http://localhost:3000/users/register',
+        // post payload:
+        data: JSON.stringify(newUser),
+        dataType: 'json',
+        contentType: "application/json",
+        success: function(data, status) {
+
+
+         if (data.error) {
+            console.log(data.error);
+            Materialize.toast(data.error, 3000, 'toastError');
+         }
+         else {
+
+            Materialize.toast("Ton compte vient d'être créé!", 2000, 'toastSuccess', function() {
+              req.session.test = "ceciestuntest";
+              browserHistory.push('/home');
+            });
+         }
+        },
+        error: function(jqXHR, status, error) {
+          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+        }
+
+    });
+
   },
 
   render() {
@@ -20,23 +61,23 @@ var RegisterBox = React.createClass({
         <form className="col s4 offset-s4 hoverable">
           <div className="row">
            <div className="input-field col s6">
-              <input id="first_name" type="text" className="validate" />
+              <input id="first_name" type="text" className="validate" ref="firstname" />
               <label for="first_name">prénom</label>
             </div>
              <div className="input-field col s6">
-              <input id="last_name" type="text" className="validate" />
+              <input id="last_name" type="text" className="validate" ref="lastname"/>
               <label for="last_name">nom de famille</label>
             </div>
             <div className="input-field col s12">
-              <input id="email" type="text" className="validate" />
+              <input id="email" type="email" className="validate" ref="email"/>
               <label for="email">e-mail</label>
             </div>
             <div className="input-field col s12">
-              <input id="password" type="text" className="validate" />
+              <input id="password" type="password" className="validate" ref="password"/>
               <label for="password">password</label>
             </div>
             <div className="input-field col s12">
-              <input id="password" type="text" className="validate" />
+              <input id="password" type="password" className="validate" ref="password-conf"/>
               <label for="password">confirmation du password</label>
             </div>
           </div>
