@@ -52,7 +52,7 @@
 	// var compression = require('compression');
 
 	var React = __webpack_require__(3);
-	var ReactDOM = __webpack_require__(4).server;
+	var ReactDOM = __webpack_require__(4);
 	var match = __webpack_require__(5).match;
 	var RouterContext = __webpack_require__(5).RouterContext;
 	var routes = __webpack_require__(6);
@@ -154,7 +154,7 @@
 /* 4 */
 /***/ function(module, exports) {
 
-	module.exports = require("react-dom");
+	module.exports = require("react-dom/server");
 
 /***/ },
 /* 5 */

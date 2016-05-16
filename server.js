@@ -4,7 +4,7 @@ var path = require('path');
 // var compression = require('compression');
 
 var React = require('react');
-var ReactDOM = require('react-dom').server;
+var ReactDOM = require('react-dom/server');
 var match = require('react-router').match;
 var RouterContext = require('react-router').RouterContext;
 var routes = require('./src/routes.jsx');
