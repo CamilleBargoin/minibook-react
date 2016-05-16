@@ -4,7 +4,6 @@ var Footer = require('./Footer.jsx');
 var FriendBoxContainer = require('./FriendBoxContainer.jsx');
 var FindUser = require('./FindUser.jsx');
 
-
 var Home = React.createClass({
 
   getInitialState() {

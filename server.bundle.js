@@ -109,7 +109,7 @@
 	});
 
 	function renderPage(appHtml) {
-	  return '<!doctype html public="storage">' + '<html>' + '<meta charset=utf-8/>' + '<title>My First React Router App</title>' + '<div id=app>${appHtml}</div>' + '<script src="/bundle.js"></script>';
+	  return '<!doctype html public="storage">' + '<html>' + '<meta charset=utf-8/>' + '<meta http-equiv="x-ua-compatible" content="ie=edge">' + '<meta name="viewport" content="width=device-width, initial-scale=1">' + '<link rel="stylesheet" type="text/css" href="main.css">' + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">' + '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">' + '<title>My First React Router App</title>' + '<div id=app>${appHtml}</div>' + '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>' + '<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>' + '<script src="/bundle.js"></script>';
 	};
 
 	var PORT = process.env.PORT || 8080;
