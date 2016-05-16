@@ -172,22 +172,21 @@
 	var Route = __webpack_require__(5).Route;
 	var IndexRoute = __webpack_require__(5).IndexRoute;
 
-	var TodosApp = __webpack_require__(7);
-	var Users = __webpack_require__(12);
-	var Landing = __webpack_require__(14);
-	var App = __webpack_require__(17);
+	// var TodosApp = require("./components/TodosApp.jsx");
+	var Users = __webpack_require__(7);
+	var Landing = __webpack_require__(9);
+	var App = __webpack_require__(12);
 
-	var Home = __webpack_require__(18);
-	var UserProfile = __webpack_require__(24);
+	var Home = __webpack_require__(13);
+	var UserProfile = __webpack_require__(19);
 
-	var auth = __webpack_require__(35);
+	var auth = __webpack_require__(30);
 
 	module.exports = React.createElement(
 	  Route,
 	  { path: '/', component: App },
 	  React.createElement(IndexRoute, { component: Landing }),
 	  React.createElement(Route, { path: '/users', component: Users }),
-	  React.createElement(Route, { path: '/todos', component: TodosApp }),
 	  React.createElement(Route, { path: '/home', component: Home, onEnter: requireAuth }),
 	  React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireAuth })
 	);
@@ -208,379 +207,7 @@
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var TaskList = __webpack_require__(8);
-	var CreateTask = __webpack_require__(10);
-	var $ = __webpack_require__(11);
-
-	var TodosApp = React.createClass({
-	    displayName: 'TodosApp',
-
-	    getInitialState: function getInitialState() {
-
-	        return {
-	            tasks: []
-	        };
-	    },
-	    componentDidMount: function componentDidMount() {
-
-	        var self = this;
-
-	        $.getJSON('http://localhost:3000/getTasks', function (data) {
-
-	            self.setState({
-	                tasks: JSON.parse(data)
-	            });
-	        });
-	    },
-	    createTask: function createTask(newTaskLabel) {
-	        var tasks = this.state.tasks;
-
-	        var newTask = {
-	            label: newTaskLabel,
-	            isCompleted: false
-	        };
-
-	        var self = this;
-
-	        $.ajax({
-	            type: 'POST',
-	            url: 'http://localhost:3000/createTask',
-	            // post payload:
-	            data: JSON.stringify(newTask),
-	            contentType: 'application/json',
-	            success: function success(taskId) {
-
-	                newTask._id = taskId;
-
-	                tasks.push(newTask);
-
-	                self.setState({
-	                    tasks: tasks
-	                });
-	            }
-	        });
-	    },
-
-	    editTask: function editTask(task) {
-
-	        for (var i = 0; i < this.state.tasks.length; i++) {
-	            if (this.state.tasks[i]._id == task._id) {
-
-	                var self = this;
-
-	                $.ajax({
-	                    type: 'POST',
-	                    url: 'http://localhost:3000/updateTask',
-	                    data: JSON.stringify(task),
-	                    contentType: 'application/json',
-	                    success: function success(result) {
-
-	                        self.state.tasks[i] = task;
-	                        self.setState({
-	                            tasks: self.state.tasks
-	                        });
-	                    }
-	                });
-	                break;
-	            }
-	        }
-	    },
-
-	    deleteTask: function deleteTask(task) {
-
-	        for (var i = 0; i < this.state.tasks.length; i++) {
-	            if (this.state.tasks[i]._id == task._id) {
-
-	                var self = this;
-
-	                $.ajax({
-	                    type: 'POST',
-	                    url: 'http://localhost:3000/deleteTask',
-	                    data: JSON.stringify(task),
-	                    contentType: 'application/json',
-	                    success: function success(result) {
-
-	                        self.state.tasks.splice(i, 1);
-	                        self.setState({
-	                            tasks: self.state.tasks
-	                        });
-	                    }
-	                });
-	                break;
-	            }
-	        }
-	    },
-
-	    render: function render() {
-
-	        console.log(this.state.tasks);
-
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                'h1',
-	                null,
-	                'MY TODO APP'
-	            ),
-	            React.createElement(CreateTask, { createTask: this.createTask }),
-	            React.createElement(TaskList, { tasks: this.state.tasks, editTask: this.editTask, deleteTask: this.deleteTask })
-	        );
-	    }
-	});
-
-	module.exports = TodosApp;
-
-/***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var React = __webpack_require__(3);
-	var TaskListItem = __webpack_require__(9);
-
-	var TaskList = React.createClass({
-	    displayName: 'TaskList',
-
-
-	    getInitialState: function getInitialState() {
-
-	        return {};
-	    },
-
-	    render: function render() {
-
-	        var methods = {
-	            editTask: this.props.editTask,
-	            deleteTask: this.props.deleteTask
-	        };
-
-	        var listItems = this.props.tasks.map(function (task, index) {
-
-	            return React.createElement(TaskListItem, _extends({ key: index }, task, methods));
-	        });
-
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                'table',
-	                null,
-	                React.createElement(
-	                    'thead',
-	                    null,
-	                    React.createElement(
-	                        'tr',
-	                        null,
-	                        React.createElement(
-	                            'th',
-	                            null,
-	                            'Tasks'
-	                        ),
-	                        React.createElement(
-	                            'th',
-	                            null,
-	                            'Actions'
-	                        )
-	                    )
-	                ),
-	                React.createElement(
-	                    'tbody',
-	                    null,
-	                    listItems
-	                )
-	            )
-	        );
-	    }
-	});
-
-	module.exports = TaskList;
-
-/***/ },
-/* 9 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(3);
-
-	var TaskListItem = React.createClass({
-	    displayName: 'TaskListItem',
-
-
-	    getInitialState: function getInitialState() {
-	        return {
-	            isEditing: false
-	        };
-	    },
-
-	    onEditing: function onEditing() {
-	        this.setState({
-	            isEditing: true
-	        });
-	    },
-	    cancelEditing: function cancelEditing() {
-	        this.setState({
-	            isEditing: false
-	        });
-	    },
-
-	    onDeleting: function onDeleting() {
-
-	        this.props.deleteTask({
-	            _id: this.props._id
-	        });
-	    },
-
-	    renderActionSection: function renderActionSection() {
-
-	        if (this.state.isEditing) {
-	            return React.createElement(
-	                'td',
-	                null,
-	                React.createElement(
-	                    'button',
-	                    { onClick: this.editLabel },
-	                    'Save'
-	                ),
-	                React.createElement(
-	                    'button',
-	                    { onClick: this.cancelEditing },
-	                    'Cancel'
-	                )
-	            );
-	        }
-
-	        return React.createElement(
-	            'td',
-	            null,
-	            React.createElement(
-	                'button',
-	                { onClick: this.onEditing },
-	                'Edit'
-	            ),
-	            React.createElement(
-	                'button',
-	                { onClick: this.onDeleting },
-	                'Delete'
-	            )
-	        );
-	    },
-
-	    renderTasksSection: function renderTasksSection() {
-
-	        var taskStyle = {
-	            cursor: 'pointer',
-	            color: this.props.isCompleted ? 'green' : 'red'
-	        };
-
-	        if (this.state.isEditing) {
-	            return React.createElement(
-	                'td',
-	                null,
-	                React.createElement(
-	                    'form',
-	                    { onSubmit: this.editLabel },
-	                    React.createElement('input', { type: 'text', defaultValue: this.props.label, ref: 'labelInput' })
-	                )
-	            );
-	        }
-
-	        return React.createElement(
-	            'td',
-	            { style: taskStyle, onClick: this.toggleComplete },
-	            this.props.label
-	        );
-	    },
-
-	    toggleComplete: function toggleComplete() {
-
-	        this.props.editTask({
-	            _id: this.props._id,
-	            label: this.props.label,
-	            isCompleted: !this.props.isCompleted
-	        });
-	    },
-
-	    editLabel: function editLabel(e) {
-	        e.preventDefault();
-
-	        this.props.editTask({
-	            _id: this.props._id,
-	            label: this.refs.labelInput.value,
-	            isCompleted: this.props.isCompleted
-	        });
-
-	        this.setState({
-	            isEditing: false
-	        });
-	    },
-
-	    render: function render() {
-
-	        return React.createElement(
-	            'tr',
-	            null,
-	            this.renderTasksSection(),
-	            this.renderActionSection()
-	        );
-	    }
-	});
-
-	module.exports = TaskListItem;
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(3);
-
-	var CreateTask = React.createClass({
-	    displayName: "CreateTask",
-
-
-	    onCreate: function onCreate(e) {
-	        e.preventDefault();
-
-	        this.props.createTask(this.refs.createInput.value);
-	        this.refs.createInput.value = "";
-	    },
-
-	    render: function render() {
-	        return React.createElement(
-	            "form",
-	            { onSubmit: this.onCreate },
-	            React.createElement("input", { type: "text", placeholder: "what do I need to do ?!!", ref: "createInput" }),
-	            React.createElement(
-	                "button",
-	                null,
-	                "Add"
-	            )
-	        );
-	    }
-	});
-
-	module.exports = CreateTask;
-
-/***/ },
-/* 11 */
-/***/ function(module, exports) {
-
-	module.exports = require("webpack-zepto");
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(3);
-	var NavLink = __webpack_require__(13);
+	var NavLink = __webpack_require__(8);
 	var Users = React.createClass({
 	  displayName: 'Users',
 
@@ -611,7 +238,7 @@
 	module.exports = Users;
 
 /***/ },
-/* 13 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -632,14 +259,14 @@
 	module.exports = NavLink;
 
 /***/ },
-/* 14 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var LoginBox = __webpack_require__(15);
-	var RegisterBox = __webpack_require__(16);
+	var LoginBox = __webpack_require__(10);
+	var RegisterBox = __webpack_require__(11);
 
 	var Landing = React.createClass({
 	  displayName: 'Landing',
@@ -715,7 +342,7 @@
 	module.exports = Landing;
 
 /***/ },
-/* 15 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -781,7 +408,7 @@
 	module.exports = LoginBox;
 
 /***/ },
-/* 16 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -911,13 +538,13 @@
 	module.exports = RegisterBox;
 
 /***/ },
-/* 17 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavLink = __webpack_require__(13);
+	var NavLink = __webpack_require__(8);
 	var IndexLink = __webpack_require__(5).IndexLink;
 
 	var App = React.createClass({
@@ -942,16 +569,16 @@
 	module.exports = App;
 
 /***/ },
-/* 18 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(19);
-	var Footer = __webpack_require__(20);
-	var FriendBoxContainer = __webpack_require__(21);
-	var FindUser = __webpack_require__(23);
+	var NavBar = __webpack_require__(14);
+	var Footer = __webpack_require__(15);
+	var FriendBoxContainer = __webpack_require__(16);
+	var FindUser = __webpack_require__(18);
 
 	var Home = React.createClass({
 	  displayName: 'Home',
@@ -972,7 +599,7 @@
 	module.exports = Home;
 
 /***/ },
-/* 19 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1030,7 +657,7 @@
 	module.exports = NavBar;
 
 /***/ },
-/* 20 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1138,13 +765,13 @@
 	module.exports = Footer;
 
 /***/ },
-/* 21 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendBox = __webpack_require__(22);
+	var FriendBox = __webpack_require__(17);
 
 	var FriendBoxContainer = React.createClass({
 	  displayName: 'FriendBoxContainer',
@@ -1248,7 +875,7 @@
 	module.exports = FriendBoxContainer;
 
 /***/ },
-/* 22 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1276,7 +903,7 @@
 	module.exports = FriendBox;
 
 /***/ },
-/* 23 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1322,20 +949,20 @@
 	module.exports = FindUser;
 
 /***/ },
-/* 24 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(19);
-	var Footer = __webpack_require__(20);
-	var PostNewFeed = __webpack_require__(25);
-	var Wall = __webpack_require__(26);
-	var FriendsList = __webpack_require__(30);
-	var ProfileData = __webpack_require__(32);
+	var NavBar = __webpack_require__(14);
+	var Footer = __webpack_require__(15);
+	var PostNewFeed = __webpack_require__(20);
+	var Wall = __webpack_require__(21);
+	var FriendsList = __webpack_require__(25);
+	var ProfileData = __webpack_require__(27);
 
-	var ToolBar = __webpack_require__(34);
+	var ToolBar = __webpack_require__(29);
 
 	var UserProfile = React.createClass({
 	  displayName: 'UserProfile',
@@ -1397,7 +1024,7 @@
 	module.exports = UserProfile;
 
 /***/ },
-/* 25 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1434,13 +1061,13 @@
 	module.exports = PostNewFeed;
 
 /***/ },
-/* 26 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
-	var WallFeed = __webpack_require__(27);
+	var WallFeed = __webpack_require__(22);
 
 	var Wall = React.createClass({
 	  displayName: "Wall",
@@ -1468,13 +1095,13 @@
 	module.exports = Wall;
 
 /***/ },
-/* 27 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FeedCommentBox = __webpack_require__(28);
+	var FeedCommentBox = __webpack_require__(23);
 
 	var WallFeed = React.createClass({
 	  displayName: 'WallFeed',
@@ -1517,13 +1144,13 @@
 	module.exports = WallFeed;
 
 /***/ },
-/* 28 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var Comment = __webpack_require__(29);
+	var Comment = __webpack_require__(24);
 
 	var FeedCommentBox = React.createClass({
 	  displayName: 'FeedCommentBox',
@@ -1544,7 +1171,7 @@
 	module.exports = FeedCommentBox;
 
 /***/ },
-/* 29 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1579,13 +1206,13 @@
 	module.exports = Comment;
 
 /***/ },
-/* 30 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendsListItem = __webpack_require__(31);
+	var FriendsListItem = __webpack_require__(26);
 
 	var FriendsList = React.createClass({
 	  displayName: 'FriendsList',
@@ -1611,7 +1238,7 @@
 	module.exports = FriendsList;
 
 /***/ },
-/* 31 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1656,13 +1283,13 @@
 	module.exports = FriendsListItem;
 
 /***/ },
-/* 32 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var ProfileDataField = __webpack_require__(33);
+	var ProfileDataField = __webpack_require__(28);
 
 	var ProfileData = React.createClass({
 	  displayName: 'ProfileData',
@@ -1693,7 +1320,7 @@
 	module.exports = ProfileData;
 
 /***/ },
-/* 33 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1770,7 +1397,7 @@
 	module.exports = ProfileDataField;
 
 /***/ },
-/* 34 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1831,7 +1458,7 @@
 	module.exports = ToolBar;
 
 /***/ },
-/* 35 */
+/* 30 */
 /***/ function(module, exports) {
 
 	"use strict";
