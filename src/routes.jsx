@@ -10,6 +10,8 @@ var App = require('./components/App.jsx');
 
 var Home = require('./components/Home.jsx');
 var UserProfile = require('./components/profile/UserProfile.jsx');
+var Inbox = require('./components/inbox/Inbox.jsx');
+var Admin = require('./components/admin/Admin.jsx');
 
 var auth = require("./auth.js");
 
@@ -24,6 +26,10 @@ module.exports = (
     <Route path="/home" component={Home} onEnter={requireAuth}>
     </Route>
     <Route path="/profile" component={UserProfile} onEnter={requireAuth}>
+    </Route>
+    <Route path="/inbox" component={Inbox} onEnter={requireAuth}>
+    </Route>
+    <Route path="/admin" component={Admin} onEnter={requireAuth}>
     </Route>
   </Route>
 );

@@ -224,3 +224,47 @@ textarea.materialize-textarea:focus:not([readonly])+label {
     font-size: 1.2em;
     font-weight: bold;
 }
+
+/* INBOX */ 
+
+#messageList .collapsible-body {
+    background-color: #FAFAFA;
+}
+
+#messageList .row {
+    height: 40px;
+    margin-bottom: 0;
+}
+
+/* PAGINATION */
+.pagination li.active {
+    background-color: #00C853;
+}
+
+/* ADMIN */
+#adminTabs .tabs li a {
+    color: #00C853;
+}
+
+#adminTabs .tabs li a.active {
+    color: #26ff6e;
+}
+
+#adminTabs .indicator {
+    background-color: #26ff6e;
+}
+
+#userList {
+    margin-top: 50px;
+}
+
+#userList ul li a {
+    color: #202020;
+    top: 39%;
+}
+
+#stats h1 {
+    color: #26ff6e;
+}
+
+/*#26ff6e, #00C853*/
