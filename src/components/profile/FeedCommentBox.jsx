@@ -11,12 +11,18 @@ var FeedCommentBox = React.createClass({
 
   
   render() {
+
+        const comments = this.props.comments.map(function(comment, i) {
+          return (
+            <Comment body={comment.body} author={comment.author} key={i} />
+          );
+        });
+
+
     return (
 
       <div>
-        <Comment body="Yeah ca claque!" author="John Rambo"/>
-        <Comment body="Lolilol" author="Miley Cirus"/>
-        <Comment body="heuuuu..." author="Cmd Cousteau"/>
+        {comments}
       </div>
     );
   }

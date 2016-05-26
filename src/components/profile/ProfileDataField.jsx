@@ -17,6 +17,12 @@ var ProfileDataField = React.createClass({
 
   save(e) {
     e.preventDefault();
+
+    this.props.updateProfile({
+      label: this.props.fieldLabel,
+      value: this.refs.input.value
+    });
+
     this.setState({
       edit: false
     });
@@ -29,7 +35,7 @@ var ProfileDataField = React.createClass({
         <li className="collection-item row">
           <form onSubmit={this.save}>
             <div className="input-field col s12">
-                <input id={this.props.id} type="text" className="validate" onBlur={this.save}/>
+                <input id={this.props.id} type="text" className="validate" onBlur={this.save} ref="input"/>
                 <label for={this.props.id}>{this.props.label}</label>
             </div>
           </form>

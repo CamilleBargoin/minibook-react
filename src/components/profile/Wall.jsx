@@ -10,22 +10,18 @@ var Wall = React.createClass({
     };
   },
 
-  
-
   render() {
+
+    const self = this;
+    const wallPosts = this.props.posts.map(function(post, i) {
+      return (
+        <WallFeed post={post} key={i} postComment={self.props.postComment}/>
+      );
+    });
+
     return (
       <div className="container">  
-        
-        <WallFeed />
-        <WallFeed />
-        <WallFeed />
-        <WallFeed />
-        <WallFeed />
-        <WallFeed />
-        <WallFeed />
-        <WallFeed />
-        <WallFeed />
-        <WallFeed />
+        {wallPosts}
       </div>
     );
   }
