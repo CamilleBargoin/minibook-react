@@ -24,6 +24,30 @@ body {
 footer {position: absolute; bottom: 0; left: 0; right: 0}
 
 
+/* NAV BAR */
+
+.searchinput {
+    width: 400px !important;
+    height: 45px !important;
+    
+}
+.searchinput::-webkit-input-placeholder {
+   color: white;
+}
+
+.searchinput:-moz-placeholder { /* Firefox 18- */
+   color: white;  
+}
+
+.searchinput::-moz-placeholder {  /* Firefox 19+ */
+   color: white;  
+}
+
+.searchinput:-ms-input-placeholder {  
+   color: white;  
+}
+
+
 
 #homePage h1.appTitle {
     text-align: center;
@@ -46,13 +70,20 @@ footer {position: absolute; bottom: 0; left: 0; right: 0}
 }
 
 .friendBox {
-    width: 100px;
-    height: 100px;
-    margin: 0;
+    width: 160px;
+    height: 160px;
+    margin: 2px;
     padding: 0;
-   display: inline-block;
+    display: inline-block;
     position: relative;
     cursor: pointer;
+}
+
+.friendBox:hover {
+    border: 2px solid #111;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
 }
 
 .friendBox p {

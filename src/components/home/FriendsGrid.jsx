@@ -1,5 +1,5 @@
 var React = require('react');
-var FriendBox = require('./FriendBox.jsx');
+var FriendBox = require('../FriendBox.jsx');
 
 var FriendBoxContainer = React.createClass({
 
@@ -96,17 +96,22 @@ var FriendBoxContainer = React.createClass({
 
     var friendBoxes = friends.map(function(friend, i) {
       return (
-        <FriendBox name={friend.name} key={i} color={friend.color} />
+         <FriendBox name={friend.name} key={i} color={friend.color} />
       );
     });
 
+    var width = Math.floor($(document).width() / 164) * 164 + "px";
+
     return (
-      <div style={{  overflow: "hidden", whiteSpace:"nowrap"}}>
-         {friendBoxes}
+      <div style={{textAlign: "center"}}>
+        <div style={{display: "flex", flexWrap: "wrap", width: width, margin: "0 auto"}} >
+           {friendBoxes}
+           {friendBoxes}
+           {friendBoxes}
+        </div>
       </div>
     );
   }
-
 });
 
 module.exports = FriendBoxContainer;

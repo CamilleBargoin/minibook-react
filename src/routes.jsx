@@ -8,7 +8,7 @@ var Users = require('./components/Users.jsx');
 var Landing = require('./components/Landing.jsx');
 var App = require('./components/App.jsx');
 
-var Home = require('./components/Home.jsx');
+var Home = require('./components/home/Home.jsx');
 var UserProfile = require('./components/profile/UserProfile.jsx');
 var Inbox = require('./components/inbox/Inbox.jsx');
 var Admin = require('./components/admin/Admin.jsx');

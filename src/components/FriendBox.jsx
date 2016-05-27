@@ -12,9 +12,17 @@ var FriendBox = React.createClass({
   
 
   render() {
+
+
+    // console.log($(document).width());
+
+    // var size = $(window).width() / 15;
+
+    const tooltip = "Dernier Statut de " + this.props.name;
+
     return (
-        <div className="friendBox hoverable" style={{backgroundColor: this.props.color}}>
-           <p>{this.props.name}</p>
+        <div className="friendBox hoverable tooltipped" data-position="bottom" data-delay="50" data-tooltip={tooltip} style={{backgroundColor: this.props.color}}>
+          <p>{this.props.name}</p>
         </div>
     );
   }

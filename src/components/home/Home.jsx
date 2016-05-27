@@ -1,10 +1,10 @@
 var React = require('react');
-var NavBar = require('./NavBar.jsx');
-var Footer = require('./Footer.jsx');
-var FriendBoxContainer = require('./FriendBoxContainer.jsx');
+var NavBar = require('../NavBar.jsx');
+var Footer = require('../Footer.jsx');
+var FriendsGrid = require('./FriendsGrid.jsx');
 var FindUser = require('./FindUser.jsx');
 
-var Chat = require('./chat/Chat.jsx');
+var Chat = require('../chat/Chat.jsx');
 
 var Home = React.createClass({
 
@@ -39,9 +39,9 @@ var Home = React.createClass({
 
     return (
       <div>
-         <NavBar openChat={this.openChat}/>
-         {/*<FriendBoxContainer />*/}
-            <FindUser />
+         <NavBar openChat={this.openChat} search="true"/>
+         {/*<FindUser />*/}
+         <FriendsGrid />
             {chat}
 
           {/*<Footer />*/}
