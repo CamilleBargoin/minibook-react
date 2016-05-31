@@ -1,16 +1,21 @@
 var React = require('react');
-
+var Auth = require('../auth.js');
 var browserHistory = require('react-router').browserHistory;
 
 var LoginBox = React.createClass({
 
   getInitialState() {
     return {
-    
+      login: "",
+      password: ""
     };
   },
 
   login() {
+
+    // Auth.login(this.state.login, this.state.password).catch(function(err) {
+    //   console.log("login error", err);
+    // });
 
     browserHistory.push('/home');
   },

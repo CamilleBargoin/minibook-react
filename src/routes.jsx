@@ -27,6 +27,8 @@ module.exports = (
     </Route>
     <Route path="/profile" component={UserProfile} onEnter={requireAuth}>
     </Route>
+    <Route path="/profile/:username" component={UserProfile} onEnter={requireAuth}>
+    </Route>
     <Route path="/inbox" component={Inbox} onEnter={requireAuth}>
     </Route>
     <Route path="/admin" component={Admin} onEnter={requireAuth}>

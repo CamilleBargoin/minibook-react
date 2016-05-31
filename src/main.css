@@ -48,6 +48,23 @@ footer {position: absolute; bottom: 0; left: 0; right: 0}
 }
 
 
+.searchSuggestions {
+    margin: -13px auto 0;
+    width: 430px;
+    cursor: pointer;
+}
+
+.searchSuggestions li {
+    text-align: left;
+    color: black;
+    display: block;
+    float: none;
+}
+
+.searchSuggestions li:hover {
+    background-color: #DDDDDD;
+}
+
 
 #homePage h1.appTitle {
     text-align: center;

@@ -1,11 +1,14 @@
 var React = require('react');
+var UserSearch = require('./UserSearch.jsx');
+
+
 
 
 var NavBar = React.createClass({
 
   getInitialState() {
     return {
-    
+      
     };
   },
 
@@ -14,9 +17,10 @@ var NavBar = React.createClass({
     alert(this.refs["userInput"].value);
   },
 
+  
   render() {
 
-
+    
 
     return (   
         <div className="navbar-fixed ">
@@ -24,10 +28,8 @@ var NavBar = React.createClass({
             <div className="nav-wrapper">
               <a href="/home" className="brand-logo">minibook</a>
 
-              <div className="center">
-                <form className="input-field col s12" onSubmit={this.searchUser}>
-                  <input type="text" className="validate white-text green searchinput hoverable" placeholder="rechercher un membre..." ref="userInput"/>
-                </form>
+              <div className="center" >
+                <UserSearch />
                 <ul className="hide-on-med-and-down" style={{position: "absolute", top: 0, right: 0}}>
                   <li><a onClick={this.props.openChat} href="#">test chat</a></li>
                   <li><a href="/profile">Mon profil</a></li>

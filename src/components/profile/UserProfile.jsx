@@ -15,6 +15,17 @@ var UserProfile = React.createClass({
 
     return {
       display: 0,
+      user: this.findUserById(this.props.params.username)
+    };
+  },
+
+  componentDidMount() {
+      $('.profile_parallax').parallax();  
+  },
+
+  findUserById(id) {
+
+    return {
       profile: {
         firstname: "Camille",
         lastname: "Bargoin",
@@ -82,10 +93,6 @@ var UserProfile = React.createClass({
     };
   },
 
-  componentDidMount() {
-      $('.profile_parallax').parallax();  
-  },
-
   selectContent(index) {
     this.setState({
       display: index
@@ -94,15 +101,15 @@ var UserProfile = React.createClass({
 
   postFeed(post) {
 
-    const posts = this.state.posts;
-    posts.unshift({
+    const user = this.state.user;
+    user.posts.unshift({
       id: Math.random() * 10000000,
       body: post,
       comments: []
     });
 
     this.setState({
-      posts: posts
+      user: user
     });
 
 
@@ -115,17 +122,17 @@ var UserProfile = React.createClass({
     console.log(comment);
     console.log(postId);
 
-    const posts = this.state.posts;
+    const user = this.state.user;
 
-    for (var i = 0; i < posts.length; i++) {
-      if (posts[i].id == postId) {
-        posts[i].comments.push({
-          author: this.state.profile.firstname + " " + this.state.profile.lastname,
+    for (var i = 0; i < user.posts.length; i++) {
+      if (user.posts[i].id == postId) {
+        user.posts[i].comments.push({
+          author: this.state.user.profile.firstname + " " + this.state.user.profile.lastname,
           body: comment
         });
 
         this.setState({
-          posts: posts
+          user: user
         });
 
         // CALL API SERVER & SAVE IN DATABASE
@@ -136,11 +143,11 @@ var UserProfile = React.createClass({
 
   updateProfile(field) {
 
-      const profile = this.state.profile;
-      profile[field.label] = field.value;
+      const user = this.state.user;
+      user.profile[field.label] = field.value;
 
       this.setState({
-        profile: profile
+        user: user
       });
 
 
@@ -153,11 +160,11 @@ var UserProfile = React.createClass({
     var displayContent;
 
     if (this.state.display === 0)
-      displayContent = <Wall posts={this.state.posts} postComment={this.postComment}/>;
+      displayContent = <Wall posts={this.state.user.posts} postComment={this.postComment}/>;
     else if (this.state.display == 1)
       displayContent = <FriendsList />;
     else if (this.state.display == 2)
-      displayContent = <ProfileData profile={this.state.profile} updateProfile={this.updateProfile} />;
+      displayContent = <ProfileData profile={this.state.user.profile} updateProfile={this.updateProfile} />;
 
     return (
         <div id="userProfile">

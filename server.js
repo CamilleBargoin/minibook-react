@@ -40,15 +40,17 @@ var app = express();
 // serve our static stuff like index.css
 //app.use(express.static(__dirname));
 //app.use(cookieParser());
+
+app.use(session({
+  secret: '1a9b829823448061ed5931380efc6c6a',
+  resave: true,
+  saveUninitialized: true,
+  //store: fileStore,
+  cookie: { maxAge: 60000 }
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// app.use(session({
-//   secret: '1a9b829823448061ed5931380efc6c6a',
-//   resave: true,
-//   saveUninitialized: true,
-//   store: fileStore
-// }));
 
 
 // send all requests to index.html so browserHistory in React Router works
