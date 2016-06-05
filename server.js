@@ -41,13 +41,13 @@ var app = express();
 //app.use(express.static(__dirname));
 //app.use(cookieParser());
 
-app.use(session({
-  secret: '1a9b829823448061ed5931380efc6c6a',
-  resave: true,
-  saveUninitialized: true,
-  //store: fileStore,
-  cookie: { maxAge: 60000 }
-}));
+// app.use(session({
+//   secret: '1a9b829823448061ed5931380efc6c6a',
+//   resave: true,
+//   saveUninitialized: true,
+//   //store: fileStore,
+//   cookie: { maxAge: 60000 }
+// }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 
