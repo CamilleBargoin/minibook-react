@@ -76,14 +76,15 @@
 	// serve our static stuff like index.css
 	//app.use(express.static(__dirname));
 	//app.use(cookieParser());
-	app.use(express.static(path.join(__dirname, 'public')));
 
-	// app.use(session({
-	//   secret: '1a9b829823448061ed5931380efc6c6a',
-	//   resave: true,
-	//   saveUninitialized: true,
-	//   store: fileStore
-	// }));
+	app.use(session({
+	  secret: '1a9b829823448061ed5931380efc6c6a',
+	  resave: true,
+	  saveUninitialized: true,
+	  //store: fileStore,
+	  cookie: { maxAge: 60000 }
+	}));
+	app.use(express.static(path.join(__dirname, 'public')));
 
 	// send all requests to index.html so browserHistory in React Router works
 	app.get('*', function (req, res) {
@@ -175,12 +176,14 @@
 	// var TodosApp = require("./components/TodosApp.jsx");
 	var Users = __webpack_require__(7);
 	var Landing = __webpack_require__(9);
-	var App = __webpack_require__(12);
+	var App = __webpack_require__(13);
 
-	var Home = __webpack_require__(13);
-	var UserProfile = __webpack_require__(19);
+	var Home = __webpack_require__(14);
+	var UserProfile = __webpack_require__(22);
+	var Inbox = __webpack_require__(33);
+	var Admin = __webpack_require__(38);
 
-	var auth = __webpack_require__(30);
+	var auth = __webpack_require__(11);
 
 	module.exports = React.createElement(
 	  Route,
@@ -188,7 +191,10 @@
 	  React.createElement(IndexRoute, { component: Landing }),
 	  React.createElement(Route, { path: '/users', component: Users }),
 	  React.createElement(Route, { path: '/home', component: Home, onEnter: requireAuth }),
-	  React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireAuth })
+	  React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireAuth }),
+	  React.createElement(Route, { path: '/profile/:username', component: UserProfile, onEnter: requireAuth }),
+	  React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireAuth }),
+	  React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireAuth })
 	);
 
 	function requireAuth(nextState, replace) {
@@ -266,7 +272,7 @@
 
 	var React = __webpack_require__(3);
 	var LoginBox = __webpack_require__(10);
-	var RegisterBox = __webpack_require__(11);
+	var RegisterBox = __webpack_require__(12);
 
 	var Landing = React.createClass({
 	  displayName: 'Landing',
@@ -348,17 +354,31 @@
 	'use strict';
 
 	var React = __webpack_require__(3);
-
+	var Auth = __webpack_require__(11);
 	var browserHistory = __webpack_require__(5).browserHistory;
 
 	var LoginBox = React.createClass({
 	  displayName: 'LoginBox',
 	  getInitialState: function getInitialState() {
-	    return {};
+	    return {
+	      email: "",
+	      password: ""
+	    };
+	  },
+	  updateField: function updateField(e) {
+	    var obj = {};
+	    obj[e.target.name] = e.target.value;
+	    this.setState(obj);
 	  },
 	  login: function login() {
+	    console.log("login action");
 
-	    browserHistory.push('/home');
+	    Auth.login(this.state.email, this.state.password, function () {
+	      alert("YEAH");
+	      console.log(window.document.cookie);
+	    });
+
+	    // browserHistory.push('/home');
 	  },
 	  render: function render() {
 	    return React.createElement(
@@ -373,7 +393,7 @@
 	          React.createElement(
 	            'div',
 	            { className: 'input-field col s12' },
-	            React.createElement('input', { id: 'email', type: 'text', className: 'validate' }),
+	            React.createElement('input', { id: 'email', name: 'email', type: 'text', className: 'validate', onChange: this.updateField }),
 	            React.createElement(
 	              'label',
 	              { 'for': 'email' },
@@ -383,7 +403,7 @@
 	          React.createElement(
 	            'div',
 	            { className: 'input-field col s12' },
-	            React.createElement('input', { id: 'password', type: 'text', className: 'validate' }),
+	            React.createElement('input', { id: 'password', name: 'password', type: 'text', className: 'validate', onChange: this.updateField }),
 	            React.createElement(
 	              'label',
 	              { 'for': 'password' },
@@ -409,6 +429,72 @@
 
 /***/ },
 /* 11 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var AuthService = {
+
+	  loggedIn: function loggedIn() {
+	    // return true;
+
+	    $.ajax({
+	      method: "GET",
+	      url: 'http://localhost:3000/users/secure',
+	      data: { sessionId: localStorage.getItem("sessionId") },
+	      success: function success(data, status) {
+
+	        console.log(data);
+	      },
+	      error: function error(jqXHR, status, _error) {
+	        Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	      }
+
+	    });
+	  },
+
+	  login: function login(email, password, callback) {
+
+	    // CALL API SERVER
+
+	    // callback:
+	    var jwt = 123456789; // id_token
+
+	    // LoginActions.loginUser(jwt);
+
+	    $.ajax({
+	      type: 'POST',
+	      url: 'http://localhost:3000/users/login',
+	      // post payload:
+	      data: JSON.stringify({ email: email, password: password }),
+	      dataType: 'json',
+	      contentType: "application/json",
+	      success: function success(data, status, jqXHR) {
+
+	        if (data.error) {
+	          console.log(data.error);
+	          Materialize.toast(data.error, 3000, 'toastError');
+	        } else {
+
+	          Materialize.toast("Loggé avec succès", 2000, 'toastSuccess', function () {
+
+	            localStorage.setItem('sessionId', data.sessionId);
+	            callback();
+	          });
+	        }
+	      },
+	      error: function error(jqXHR, status, _error2) {
+	        Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	      }
+
+	    });
+	  }
+	};
+
+	module.exports = AuthService;
+
+/***/ },
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -538,7 +624,7 @@
 	module.exports = RegisterBox;
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -549,8 +635,6 @@
 
 	var App = React.createClass({
 	  displayName: 'App',
-
-
 	  getInitialState: function getInitialState() {
 	    return {
 	      test: "test"
@@ -563,35 +647,52 @@
 	      this.props.children
 	    );
 	  }
-
 	});
 
 	module.exports = App;
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(14);
-	var Footer = __webpack_require__(15);
-	var FriendBoxContainer = __webpack_require__(16);
-	var FindUser = __webpack_require__(18);
+	var NavBar = __webpack_require__(15);
+	var Footer = __webpack_require__(17);
+	var FriendsGrid = __webpack_require__(18);
+
+	var Chat = __webpack_require__(20);
 
 	var Home = React.createClass({
 	  displayName: 'Home',
 	  getInitialState: function getInitialState() {
-	    return {};
+	    return {
+	      chat: null
+	    };
+	  },
+	  openChat: function openChat() {
+	    this.setState({
+	      chat: true
+	    });
+	  },
+	  closeChat: function closeChat() {
+	    this.setState({
+	      chat: null
+	    });
 	  },
 	  render: function render() {
+
+	    var chat;
+
+	    if (this.state.chat) chat = React.createElement(Chat, { name: 'Chuck Norris', closeChat: this.closeChat });else chat = React.createElement('div', null);
+
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(NavBar, null),
-	      React.createElement(FindUser, null),
-	      React.createElement(Footer, null)
+	      React.createElement(NavBar, { openChat: this.openChat, search: 'true' }),
+	      React.createElement(FriendsGrid, null),
+	      chat
 	    );
 	  }
 	});
@@ -599,52 +700,76 @@
 	module.exports = Home;
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	var React = __webpack_require__(3);
+	var UserSearch = __webpack_require__(16);
 
 	var NavBar = React.createClass({
-	  displayName: "NavBar",
+	  displayName: 'NavBar',
 	  getInitialState: function getInitialState() {
 	    return {};
 	  },
+	  searchUser: function searchUser(e) {
+	    e.preventDefault();
+	    alert(this.refs["userInput"].value);
+	  },
 	  render: function render() {
+
 	    return React.createElement(
-	      "div",
-	      { className: "navbar-fixed " },
+	      'div',
+	      { className: 'navbar-fixed ' },
 	      React.createElement(
-	        "nav",
-	        { className: "green accent-4" },
+	        'nav',
+	        { className: 'green accent-4' },
 	        React.createElement(
-	          "div",
-	          { className: "nav-wrapper" },
+	          'div',
+	          { className: 'nav-wrapper' },
 	          React.createElement(
-	            "a",
-	            { href: "/home", className: "brand-logo" },
-	            "minibook"
+	            'a',
+	            { href: '/home', className: 'brand-logo' },
+	            'minibook'
 	          ),
 	          React.createElement(
-	            "ul",
-	            { className: "right hide-on-med-and-down" },
+	            'div',
+	            { className: 'center' },
+	            React.createElement(UserSearch, null),
 	            React.createElement(
-	              "li",
-	              null,
+	              'ul',
+	              { className: 'hide-on-med-and-down', style: { position: "absolute", top: 0, right: 0 } },
 	              React.createElement(
-	                "a",
-	                { href: "/profile" },
-	                "Mon profil"
-	              )
-	            ),
-	            React.createElement(
-	              "li",
-	              null,
+	                'li',
+	                null,
+	                React.createElement(
+	                  'a',
+	                  { onClick: this.props.openChat, href: '#' },
+	                  'test chat'
+	                )
+	              ),
 	              React.createElement(
-	                "a",
-	                { href: "badges.html" },
-	                "Components"
+	                'li',
+	                null,
+	                React.createElement(
+	                  'a',
+	                  { href: '/profile' },
+	                  'Mon profil'
+	                )
+	              ),
+	              React.createElement(
+	                'li',
+	                null,
+	                React.createElement(
+	                  'a',
+	                  { href: '/inbox' },
+	                  React.createElement(
+	                    'i',
+	                    { className: 'material-icons' },
+	                    'email'
+	                  )
+	                )
 	              )
 	            )
 	          )
@@ -657,7 +782,132 @@
 	module.exports = NavBar;
 
 /***/ },
-/* 15 */
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(3);
+
+	var userList = [{
+	  firstname: "albert",
+	  lastname: "King",
+	  color: "#47B8E0"
+	}, {
+	  firstname: "Bertrand",
+	  lastname: "Forest",
+	  color: "#FFC952"
+	}, {
+	  firstname: "Camille",
+	  lastname: "Blue",
+	  color: "#FF7473"
+	}, {
+	  firstname: "Donald",
+	  lastname: "Smith",
+	  color: "#47B8E0"
+	}, {
+	  firstname: "Etienne",
+	  lastname: "Williamson",
+	  color: "#FFC952"
+	}, {
+	  firstname: "Francois",
+	  lastname: "Rivers",
+	  color: "#FF7473"
+	}, {
+	  firstname: "Gertrude",
+	  lastname: "Star",
+	  color: "#47B8E0"
+	}, {
+	  firstname: "Henry",
+	  lastname: "Bear",
+	  color: "#FFC952"
+	}, {
+	  firstname: "Igor",
+	  lastname: "Miller",
+	  color: "#FF7473"
+	}, {
+	  firstname: "Janine",
+	  lastname: "Paulson",
+	  color: "#47B8E0"
+	}, {
+	  firstname: "Kamel",
+	  lastname: "Frey",
+	  color: "#FFC952"
+	}, {
+	  firstname: "Léonidas",
+	  lastname: "Silver",
+	  color: "#FF7473"
+	}];
+
+	var FindUser = React.createClass({
+	  displayName: "FindUser",
+	  getInitialState: function getInitialState() {
+	    return {
+	      suggestions: []
+	    };
+	  },
+	  findUsers: function findUsers(string, callback) {
+	    var stringLow = string.toLowerCase();
+	    var result = [];
+	    userList.map(function (user, key) {
+	      if (user.firstname.toLowerCase().startsWith(stringLow) || user.lastname.toLowerCase().startsWith(stringLow)) result.push(user);
+	    });
+
+	    callback(result);
+	  },
+	  onChange: function onChange(e) {
+	    var that = this;
+	    var input = this.refs["userInput"].value;
+	    if (input && input != "") {
+	      this.findUsers(this.refs["userInput"].value, function (result) {
+	        that.setState({
+	          suggestions: result
+	        });
+	      });
+	    } else {
+	      that.setState({
+	        suggestions: []
+	      });
+	    }
+	  },
+	  selectUser: function selectUser(e) {
+	    console.log(e.currentTarget);
+	  },
+	  render: function render() {
+
+	    var that = this;
+	    var displayUserSuggestions = this.state.suggestions.length > 0 ? "block" : "none";
+	    var userSuggestions = this.state.suggestions.map(function (user, key) {
+	      return React.createElement(
+	        "li",
+	        { className: "collection-item", onClick: that.selectUser, key: key },
+	        user.firstname,
+	        " ",
+	        user.lastname
+	      );
+	    });
+
+	    return React.createElement(
+	      "div",
+	      null,
+	      React.createElement(
+	        "form",
+	        { className: "input-field col s12", onSubmit: this.searchUser },
+	        React.createElement("input", { type: "text", className: "validate white-text green searchinput hoverable", placeholder: "rechercher un membre...", ref: "userInput", onChange: this.onChange })
+	      ),
+	      React.createElement(
+	        "ul",
+	        { className: "collection searchSuggestions", style: { display: displayUserSuggestions } },
+	        userSuggestions
+	      )
+	    );
+	  }
+	});
+
+	module.exports = FindUser;
+
+/***/ },
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -765,18 +1015,21 @@
 	module.exports = Footer;
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendBox = __webpack_require__(17);
+	var FriendBox = __webpack_require__(19);
 
 	var FriendBoxContainer = React.createClass({
 	  displayName: 'FriendBoxContainer',
 	  getInitialState: function getInitialState() {
 	    return {};
+	  },
+	  componentDidMount: function componentDidMount() {
+	    $('.friendBox.tooltipped').tooltip({ delay: 50 });
 	  },
 	  render: function render() {
 
@@ -864,10 +1117,18 @@
 	      return React.createElement(FriendBox, { name: friend.name, key: i, color: friend.color });
 	    });
 
+	    var width = Math.floor($(document).width() / 164) * 164 + "px";
+
 	    return React.createElement(
 	      'div',
-	      { style: { overflow: "hidden", whiteSpace: "nowrap" } },
-	      friendBoxes
+	      { style: { textAlign: "center" } },
+	      React.createElement(
+	        'div',
+	        { style: { display: "flex", flexWrap: "wrap", width: width, margin: "0 auto" } },
+	        friendBoxes,
+	        friendBoxes,
+	        friendBoxes
+	      )
 	    );
 	  }
 	});
@@ -875,24 +1136,29 @@
 	module.exports = FriendBoxContainer;
 
 /***/ },
-/* 17 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	var React = __webpack_require__(3);
+	var browserHistory = __webpack_require__(5).browserHistory;
 
 	var FriendBox = React.createClass({
-	  displayName: "FriendBox",
-	  getInitialState: function getInitialState() {
-	    return {};
+	  displayName: 'FriendBox',
+	  componentDidMount: function componentDidMount() {},
+	  openFriendProfile: function openFriendProfile() {
+
+	    browserHistory.push('/profile/' + this.props.name);
 	  },
 	  render: function render() {
+	    var tooltip = "Dernier Statut de " + this.props.name;
+
 	    return React.createElement(
-	      "div",
-	      { className: "friendBox hoverable", style: { backgroundColor: this.props.color } },
+	      'div',
+	      { onClick: this.openFriendProfile, className: 'friendBox hoverable tooltipped', 'data-position': 'bottom', 'data-delay': '50', 'data-tooltip': tooltip, style: { backgroundColor: this.props.color } },
 	      React.createElement(
-	        "p",
+	        'p',
 	        null,
 	        this.props.name
 	      )
@@ -903,88 +1169,272 @@
 	module.exports = FriendBox;
 
 /***/ },
-/* 18 */
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var Messages = __webpack_require__(21);
+
+	var Chat = React.createClass({
+	    displayName: 'Chat',
+	    getInitialState: function getInitialState() {
+	        return {
+	            messages: []
+	        };
+	    },
+	    onClose: function onClose() {
+	        this.props.closeChat(this.props.name);
+	    },
+	    submitMessage: function submitMessage(e) {
+	        e.preventDefault();
+	        var messages = this.state.messages;
+	        messages.push({ author: "me", text: this.refs.messageInput.value });
+	        this.setState({ messages: messages });
+	        this.refs.messageInput.value = "";
+	    },
+	    componentDidMount: function componentDidMount() {
+
+	        var self = this;
+	        setTimeout(function () {
+	            var messages = self.state.messages;
+	            messages.push({ author: "Chuck", text: "HAHAHAHA" });
+	            self.setState({ messages: messages });
+	        }, 5000);
+	    },
+	    render: function render() {
+
+	        var messages = this.state.messages;
+
+	        return React.createElement(
+	            'div',
+	            { style: { width: "250px", height: "360px", position: "fixed", bottom: 0, right: "20px", margin: 0, padding: 0 }, className: 'grey lighten-5 hoverable' },
+	            React.createElement(
+	                'div',
+	                { className: 'green', style: { width: "100%", height: "35px", margin: 0 } },
+	                React.createElement(
+	                    'div',
+	                    { className: 'white-text left', style: { width: "80%", height: "35px", lineHeight: "35px", paddingLeft: "10px" } },
+	                    this.props.name
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { onClick: this.onClose, className: 'waves-effect waves-light btn right green', style: { width: "34px", height: "34px", padding: 0 } },
+	                    React.createElement(
+	                        'i',
+	                        { className: 'material-icons small white-text' },
+	                        'close'
+	                    )
+	                )
+	            ),
+	            React.createElement(
+	                'div',
+	                { style: { width: "250px", height: "320px", margin: "0 auto", padding: 0 } },
+	                React.createElement(
+	                    'div',
+	                    { id: 'chatBody', style: { display: "block", width: "100%", height: "260px", margin: 0, padding: 0 } },
+	                    React.createElement(Messages, { messages: this.state.messages })
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { style: { display: "block", width: "100%", height: "40px" } },
+	                    React.createElement(
+	                        'form',
+	                        { onSubmit: this.submitMessage },
+	                        React.createElement(
+	                            'div',
+	                            { className: 'input-field', style: { borderTop: "2px solid #202020" } },
+	                            React.createElement('input', { type: 'text', placeholder: 'Ton message...', ref: 'messageInput', style: { paddingLeft: "10px" } })
+	                        )
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = Chat;
+
+/***/ },
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
 
-	var FindUser = React.createClass({
-	  displayName: "FindUser",
-	  getInitialState: function getInitialState() {
-	    return {};
-	  },
-	  render: function render() {
-	    return React.createElement(
-	      "div",
-	      { className: "row", style: { marginTop: "75px" } },
-	      React.createElement(
-	        "div",
-	        { className: "card-panel hoverable col s8 offset-s2 m6 offset-m3" },
-	        React.createElement(
-	          "p",
-	          { className: "white-text" },
-	          "Recherche un membre dans la communauté !"
-	        ),
-	        React.createElement(
-	          "form",
-	          null,
-	          React.createElement(
-	            "div",
-	            { className: "input-field col s12" },
-	            React.createElement("input", { id: "newFeed", type: "text", className: "validate" }),
+	var Messages = React.createClass({
+	    displayName: "Messages",
+	    render: function render() {
+
+	        var texts = this.props.messages.map(function (message, i) {
+
+	            if (message.author == "me") {
+	                return React.createElement(
+	                    "p",
+	                    null,
+	                    message.text
+	                );
+	            }
+	            return;
 	            React.createElement(
-	              "label",
-	              { "for": "newFeed" },
-	              "nom ou prénom"
-	            )
-	          )
-	        )
-	      )
-	    );
-	  }
+	                "p",
+	                { style: { textAlign: "right", width: "100%" } },
+	                message.text
+	            );
+	        });
+
+	        return React.createElement(
+	            "div",
+	            null,
+	            texts
+	        );
+	    }
 	});
 
-	module.exports = FindUser;
+	module.exports = Messages;
 
 /***/ },
-/* 19 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(14);
-	var Footer = __webpack_require__(15);
-	var PostNewFeed = __webpack_require__(20);
-	var Wall = __webpack_require__(21);
-	var FriendsList = __webpack_require__(25);
-	var ProfileData = __webpack_require__(27);
+	var NavBar = __webpack_require__(15);
+	var Footer = __webpack_require__(17);
+	var PostNewFeed = __webpack_require__(23);
+	var Wall = __webpack_require__(24);
+	var FriendsList = __webpack_require__(28);
+	var ProfileData = __webpack_require__(30);
 
-	var ToolBar = __webpack_require__(29);
+	var ToolBar = __webpack_require__(32);
 
 	var UserProfile = React.createClass({
 	  displayName: 'UserProfile',
 	  getInitialState: function getInitialState() {
+
 	    return {
-	      display: 0
+	      display: 0,
+	      user: this.findUserById(this.props.params.username)
 	    };
 	  },
 	  componentDidMount: function componentDidMount() {
 	    $('.profile_parallax').parallax();
 	  },
+	  findUserById: function findUserById(id) {
+
+	    return {
+	      profile: {
+	        firstname: "Camille",
+	        lastname: "Bargoin",
+	        age: 30,
+	        email: "camille@minibook.com",
+	        address: "87 rue Saint Fargeau",
+	        city: "Paris"
+	      },
+	      posts: [{
+	        id: 1,
+	        body: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.",
+	        comments: [{
+	          author: "John Rambo",
+	          body: "Yeah ca claque!"
+	        }, {
+	          author: "Miley Cirus",
+	          body: "Lolilol"
+	        }, {
+	          author: "Cmd Cousteau",
+	          body: "..."
+	        }]
+	      }, {
+	        id: 2,
+	        body: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.",
+	        comments: [{
+	          author: "John Rambo",
+	          body: "Yeah ca claque!"
+	        }, {
+	          author: "Miley Cirus",
+	          body: "Lolilol"
+	        }, {
+	          author: "Cmd Cousteau",
+	          body: "..."
+	        }]
+	      }, {
+	        id: 3,
+	        body: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.",
+	        comments: [{
+	          author: "John Rambo",
+	          body: "Yeah ca claque!"
+	        }, {
+	          author: "Miley Cirus",
+	          body: "Lolilol"
+	        }, {
+	          author: "Cmd Cousteau",
+	          body: "..."
+	        }]
+	      }]
+	    };
+	  },
 	  selectContent: function selectContent(index) {
-	    console.log(index);
 	    this.setState({
 	      display: index
 	    });
+	  },
+	  postFeed: function postFeed(post) {
+
+	    var user = this.state.user;
+	    user.posts.unshift({
+	      id: Math.random() * 10000000,
+	      body: post,
+	      comments: []
+	    });
+
+	    this.setState({
+	      user: user
+	    });
+
+	    // CALL API SERVER & SAVE IN DATABASE
+	  },
+	  postComment: function postComment(comment, postId) {
+
+	    console.log(comment);
+	    console.log(postId);
+
+	    var user = this.state.user;
+
+	    for (var i = 0; i < user.posts.length; i++) {
+	      if (user.posts[i].id == postId) {
+	        user.posts[i].comments.push({
+	          author: this.state.user.profile.firstname + " " + this.state.user.profile.lastname,
+	          body: comment
+	        });
+
+	        this.setState({
+	          user: user
+	        });
+
+	        // CALL API SERVER & SAVE IN DATABASE
+	        break;
+	      }
+	    }
+	  },
+	  updateProfile: function updateProfile(field) {
+
+	    var user = this.state.user;
+	    user.profile[field.label] = field.value;
+
+	    this.setState({
+	      user: user
+	    });
+
+	    // CALL API SERVER & SAVE IN DATABASE
 	  },
 	  render: function render() {
 
 	    var displayContent;
 
-	    if (this.state.display === 0) displayContent = React.createElement(Wall, null);else if (this.state.display == 1) displayContent = React.createElement(FriendsList, null);else if (this.state.display == 2) displayContent = React.createElement(ProfileData, null);
+	    if (this.state.display === 0) displayContent = React.createElement(Wall, { posts: this.state.user.posts, postComment: this.postComment });else if (this.state.display == 1) displayContent = React.createElement(FriendsList, null);else if (this.state.display == 2) displayContent = React.createElement(ProfileData, { profile: this.state.user.profile, updateProfile: this.updateProfile });
 
 	    return React.createElement(
 	      'div',
@@ -1011,7 +1461,7 @@
 	          'div',
 	          { className: 'container' },
 	          React.createElement(ToolBar, { selectContent: this.selectContent }),
-	          React.createElement(PostNewFeed, null)
+	          React.createElement(PostNewFeed, { post: this.postFeed })
 	        )
 	      ),
 	      displayContent,
@@ -1023,7 +1473,7 @@
 	module.exports = UserProfile;
 
 /***/ },
-/* 20 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1035,6 +1485,12 @@
 	  getInitialState: function getInitialState() {
 	    return {};
 	  },
+	  submitNewFeed: function submitNewFeed(e) {
+	    e.preventDefault();
+	    this.props.post(this.refs.feedInput.value);
+
+	    this.refs.feedInput.value = "";
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      "div",
@@ -1043,9 +1499,9 @@
 	        "div",
 	        { className: "card-panel hoverable col s8 offset-s2 m6 offset-m3" },
 	        React.createElement(
-	          "div",
-	          { className: "input-field col s12" },
-	          React.createElement("input", { id: "newFeed", type: "text", className: "validate" }),
+	          "form",
+	          { className: "input-field col s12", onSubmit: this.submitNewFeed },
+	          React.createElement("input", { id: "newFeed", type: "text", className: "validate", ref: "feedInput" }),
 	          React.createElement(
 	            "label",
 	            { "for": "newFeed" },
@@ -1060,13 +1516,13 @@
 	module.exports = PostNewFeed;
 
 /***/ },
-/* 21 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
-	var WallFeed = __webpack_require__(22);
+	var WallFeed = __webpack_require__(25);
 
 	var Wall = React.createClass({
 	  displayName: "Wall",
@@ -1074,19 +1530,16 @@
 	    return {};
 	  },
 	  render: function render() {
+
+	    var self = this;
+	    var wallPosts = this.props.posts.map(function (post, i) {
+	      return React.createElement(WallFeed, { post: post, key: i, postComment: self.props.postComment });
+	    });
+
 	    return React.createElement(
 	      "div",
 	      { className: "container" },
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null),
-	      React.createElement(WallFeed, null)
+	      wallPosts
 	    );
 	  }
 	});
@@ -1094,20 +1547,34 @@
 	module.exports = Wall;
 
 /***/ },
-/* 22 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FeedCommentBox = __webpack_require__(23);
+	var FeedCommentBox = __webpack_require__(26);
 
 	var WallFeed = React.createClass({
 	  displayName: 'WallFeed',
 	  getInitialState: function getInitialState() {
 	    return {};
 	  },
+	  postComment: function postComment(e) {
+	    e.preventDefault();
+
+	    this.props.postComment(this.refs.commentInput.value, this.props.post.id);
+	  },
 	  render: function render() {
+
+	    var commentsContainer;
+
+	    if (this.props.post.comments) {
+	      commentsContainer = React.createElement(FeedCommentBox, { comments: this.props.post.comments });
+	    } else {
+	      commentsContainer = React.createElement('div', null);
+	    }
+
 	    return React.createElement(
 	      'div',
 	      { style: { margin: "50px 0" }, className: 'wallFeed row' },
@@ -1122,14 +1589,14 @@
 	        React.createElement(
 	          'p',
 	          { className: 'feedText' },
-	          'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.'
+	          this.props.post.body
 	        ),
-	        React.createElement(FeedCommentBox, null)
+	        commentsContainer
 	      ),
 	      React.createElement(
-	        'div',
-	        { className: 'input-field col l6 offset-l3 m8 offset-m3 s10 offset-s2' },
-	        React.createElement('input', { id: 'feedAComment', type: 'text', className: 'validate' }),
+	        'form',
+	        { className: 'input-field col l6 offset-l3 m8 offset-m3 s10 offset-s2', onSubmit: this.postComment },
+	        React.createElement('input', { id: 'feedAComment', type: 'text', className: 'validate', ref: 'commentInput' }),
 	        React.createElement(
 	          'label',
 	          { 'for': 'feedAComment' },
@@ -1143,13 +1610,13 @@
 	module.exports = WallFeed;
 
 /***/ },
-/* 23 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var Comment = __webpack_require__(24);
+	var Comment = __webpack_require__(27);
 
 	var FeedCommentBox = React.createClass({
 	  displayName: 'FeedCommentBox',
@@ -1157,12 +1624,15 @@
 	    return {};
 	  },
 	  render: function render() {
+
+	    var comments = this.props.comments.map(function (comment, i) {
+	      return React.createElement(Comment, { body: comment.body, author: comment.author, key: i });
+	    });
+
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(Comment, { body: 'Yeah ca claque!', author: 'John Rambo' }),
-	      React.createElement(Comment, { body: 'Lolilol', author: 'Miley Cirus' }),
-	      React.createElement(Comment, { body: 'heuuuu...', author: 'Cmd Cousteau' })
+	      comments
 	    );
 	  }
 	});
@@ -1170,7 +1640,7 @@
 	module.exports = FeedCommentBox;
 
 /***/ },
-/* 24 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1205,13 +1675,13 @@
 	module.exports = Comment;
 
 /***/ },
-/* 25 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendsListItem = __webpack_require__(26);
+	var FriendsListItem = __webpack_require__(29);
 
 	var FriendsList = React.createClass({
 	  displayName: 'FriendsList',
@@ -1237,7 +1707,7 @@
 	module.exports = FriendsList;
 
 /***/ },
-/* 26 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1282,13 +1752,13 @@
 	module.exports = FriendsListItem;
 
 /***/ },
-/* 27 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var ProfileDataField = __webpack_require__(28);
+	var ProfileDataField = __webpack_require__(31);
 
 	var ProfileData = React.createClass({
 	  displayName: 'ProfileData',
@@ -1305,12 +1775,12 @@
 	      React.createElement(
 	        'ul',
 	        { className: 'collection hoverable' },
-	        React.createElement(ProfileDataField, { label: 'Prénom', value: 'Camille', index: '0' }),
-	        React.createElement(ProfileDataField, { label: 'Nom', value: 'Bargoin', index: '1' }),
-	        React.createElement(ProfileDataField, { label: 'Âge', value: '29 ans', index: '2' }),
-	        React.createElement(ProfileDataField, { label: 'E-mail', value: 'camille@minibook.com', index: '3' }),
-	        React.createElement(ProfileDataField, { label: 'Adresse', value: '87 rue Saint Fargeau', index: '4' }),
-	        React.createElement(ProfileDataField, { label: 'Ville', value: 'Paris', index: '5' })
+	        React.createElement(ProfileDataField, { label: 'Prénom', fieldLabel: 'firstname', value: this.props.profile.firstname, index: '0', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'Nom', fieldLabel: 'lastname', value: this.props.profile.lastname, index: '1', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'Âge', fieldLabel: 'age', value: this.props.profile.age + " ans", index: '2', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'E-mail', fieldLabel: 'email', value: this.props.profile.email, index: '3', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'Adresse', fieldLabel: 'address', value: this.props.profile.address, index: '4', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'Ville', fieldLabel: 'city', value: this.props.profile.city, index: '5', updateProfile: this.props.updateProfile })
 	      )
 	    );
 	  }
@@ -1319,7 +1789,7 @@
 	module.exports = ProfileData;
 
 /***/ },
-/* 28 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1340,6 +1810,12 @@
 	  },
 	  save: function save(e) {
 	    e.preventDefault();
+
+	    this.props.updateProfile({
+	      label: this.props.fieldLabel,
+	      value: this.refs.input.value
+	    });
+
 	    this.setState({
 	      edit: false
 	    });
@@ -1356,7 +1832,7 @@
 	          React.createElement(
 	            "div",
 	            { className: "input-field col s12" },
-	            React.createElement("input", { id: this.props.id, type: "text", className: "validate", onBlur: this.save }),
+	            React.createElement("input", { id: this.props.id, type: "text", className: "validate", onBlur: this.save, ref: "input" }),
 	            React.createElement(
 	              "label",
 	              { "for": this.props.id },
@@ -1396,7 +1872,7 @@
 	module.exports = ProfileDataField;
 
 /***/ },
-/* 29 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1457,20 +1933,460 @@
 	module.exports = ToolBar;
 
 /***/ },
-/* 30 */
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var NavBar = __webpack_require__(15);
+	var MessageList = __webpack_require__(34);
+	var Pagination = __webpack_require__(37);
+
+	var Inbox = React.createClass({
+	  displayName: 'Inbox',
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  render: function render() {
+
+	    var messages = [{ author: "ZLatan", body: "I'm looking for a new team, call me!", object: "The Legend", date: 1460887462 }, { author: "Jack Bauer", body: "Sir, you have to save the President !", object: "2 hours left...", date: 1433412262 }, { author: "Mickael Jackson", body: "Aouh !", object: "Black or White ?", date: 1424257462 }];
+
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(NavBar, null),
+	      React.createElement(
+	        'div',
+	        { className: 'container' },
+	        React.createElement(MessageList, { messages: messages }),
+	        React.createElement(Pagination, null)
+	      )
+	    );
+	  }
+	});
+
+	module.exports = Inbox;
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var MessageLine = __webpack_require__(35);
+
+	var MessageList = React.createClass({
+	  displayName: 'MessageList',
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  componentDidMount: function componentDidMount() {
+	    $('#messageList').collapsible({
+	      accordion: false // A setting that changes the collapsible behavior to expandable instead of the default accordion style
+	    });
+	  },
+	  render: function render() {
+
+	    var messageLines = this.props.messages.map(function (message, i) {
+	      return React.createElement(MessageLine, { author: message.author, body: message.body, object: message.object, date: message.date, key: i });
+	    });
+
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'ul',
+	        { id: 'messageList', className: 'collapsible popout', 'data-collapsible': 'accordion' },
+	        messageLines
+	      )
+	    );
+	  }
+	});
+
+	module.exports = MessageList;
+
+/***/ },
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var moment = __webpack_require__(36);
+
+	var MessageLine = React.createClass({
+	  displayName: 'MessageLine',
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  render: function render() {
+
+	    var date = moment(this.props.date * 1000).format("MMMM Do");
+
+	    return React.createElement(
+	      'li',
+	      null,
+	      React.createElement(
+	        'div',
+	        { className: 'collapsible-header' },
+	        React.createElement(
+	          'div',
+	          { className: 'row' },
+	          React.createElement(
+	            'i',
+	            { className: 'material-icons' },
+	            'whatshot'
+	          ),
+	          React.createElement(
+	            'span',
+	            { className: 'col s2', style: { fontWeight: "bold" } },
+	            this.props.author
+	          ),
+	          React.createElement(
+	            'span',
+	            { className: 'col s4' },
+	            this.props.object
+	          ),
+	          React.createElement(
+	            'span',
+	            { className: 'col s2 offset-s3', style: { textAlign: "right" } },
+	            date
+	          )
+	        )
+	      ),
+	      React.createElement(
+	        'div',
+	        { className: 'collapsible-body' },
+	        React.createElement(
+	          'p',
+	          null,
+	          this.props.body
+	        )
+	      )
+	    );
+	  }
+	});
+
+	module.exports = MessageLine;
+
+/***/ },
+/* 36 */
 /***/ function(module, exports) {
+
+	module.exports = require("moment");
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var auth = {
+	var React = __webpack_require__(3);
 
-	  loggedIn: function loggedIn() {
-	    return true;
+	var Pagination = React.createClass({
+	  displayName: "Pagination",
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  render: function render() {
+
+	    return React.createElement(
+	      "ul",
+	      { className: "pagination" },
+	      React.createElement(
+	        "li",
+	        { className: "disabled" },
+	        React.createElement(
+	          "a",
+	          { href: "#!" },
+	          React.createElement(
+	            "i",
+	            { className: "material-icons transparent", style: { color: "#00C853" } },
+	            "chevron_left"
+	          )
+	        )
+	      ),
+	      React.createElement(
+	        "li",
+	        { className: "active" },
+	        React.createElement(
+	          "a",
+	          { href: "#!" },
+	          "1"
+	        )
+	      ),
+	      React.createElement(
+	        "li",
+	        { className: "waves-effect" },
+	        React.createElement(
+	          "a",
+	          { href: "#!" },
+	          "2"
+	        )
+	      ),
+	      React.createElement(
+	        "li",
+	        { className: "waves-effect" },
+	        React.createElement(
+	          "a",
+	          { href: "#!" },
+	          "3"
+	        )
+	      ),
+	      React.createElement(
+	        "li",
+	        { className: "waves-effect" },
+	        React.createElement(
+	          "a",
+	          { href: "#!" },
+	          "4"
+	        )
+	      ),
+	      React.createElement(
+	        "li",
+	        { className: "waves-effect" },
+	        React.createElement(
+	          "a",
+	          { href: "#!" },
+	          "5"
+	        )
+	      ),
+	      React.createElement(
+	        "li",
+	        { className: "waves-effect" },
+	        React.createElement(
+	          "a",
+	          { href: "#!" },
+	          React.createElement(
+	            "i",
+	            { className: "material-icons transparent", style: { color: "#00C853" } },
+	            "chevron_right"
+	          )
+	        )
+	      )
+	    );
 	  }
+	});
 
-	};
+	module.exports = Pagination;
 
-	module.exports = auth;
+/***/ },
+/* 38 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var NavBar = __webpack_require__(15);
+	var UserList = __webpack_require__(39);
+	var Stats = __webpack_require__(41);
+
+	var Admin = React.createClass({
+	  displayName: 'Admin',
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  componentDidMount: function componentDidMount() {
+	    $('#adminTabs ul.tabs').tabs();
+	  },
+	  render: function render() {
+
+	    var users = [{ name: "Chuck Norris" }, { name: "Jean CLaude VanDamme" }, { name: "Steven Seagal" }, { name: "Kurt Russel" }, { name: "Jon Snow" }, { name: "Beyonce" }, { name: "John Rambo" }, { name: "Chuck Norris" }, { name: "Jean CLaude VanDamme" }, { name: "Steven Seagal" }, { name: "Kurt Russel" }, { name: "Jon Snow" }, { name: "Beyonce" }, { name: "John Rambo" }];
+
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(NavBar, null),
+	      React.createElement(
+	        'div',
+	        { className: 'container' },
+	        React.createElement(
+	          'div',
+	          { id: 'adminTabs', className: 'row' },
+	          React.createElement(
+	            'div',
+	            { className: 'col s12' },
+	            React.createElement(
+	              'ul',
+	              { className: 'tabs transparent' },
+	              React.createElement(
+	                'li',
+	                { className: 'tab col s3' },
+	                React.createElement(
+	                  'a',
+	                  { className: 'active', href: '#users' },
+	                  'Utilisateurs'
+	                )
+	              ),
+	              React.createElement(
+	                'li',
+	                { className: 'tab col s3' },
+	                React.createElement(
+	                  'a',
+	                  { href: '#stats' },
+	                  'Statistiques'
+	                )
+	              ),
+	              React.createElement(
+	                'li',
+	                { className: 'tab col s3' },
+	                React.createElement(
+	                  'a',
+	                  { href: '#test3' },
+	                  'Test 3'
+	                )
+	              ),
+	              React.createElement(
+	                'li',
+	                { className: 'tab col s3' },
+	                React.createElement(
+	                  'a',
+	                  { href: '#test4' },
+	                  'Test 4'
+	                )
+	              )
+	            )
+	          ),
+	          React.createElement(
+	            'div',
+	            { id: 'users', className: 'col s12' },
+	            React.createElement(UserList, { users: users })
+	          ),
+	          React.createElement(
+	            'div',
+	            { id: 'stats', className: 'col s12' },
+	            React.createElement(Stats, null)
+	          ),
+	          React.createElement(
+	            'div',
+	            { id: 'test3', className: 'col s12' },
+	            'Test 3'
+	          ),
+	          React.createElement(
+	            'div',
+	            { id: 'test4', className: 'col s12' },
+	            'Test 4'
+	          )
+	        )
+	      )
+	    );
+	  }
+	});
+
+	module.exports = Admin;
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var React = __webpack_require__(3);
+	var UserListItem = __webpack_require__(40);
+
+	var UserList = React.createClass({
+	  displayName: 'UserList',
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  render: function render() {
+
+	    var userLines = this.props.users.map(function (user, i) {
+	      return React.createElement(UserListItem, _extends({}, user, { key: i }));
+	    });
+
+	    return React.createElement(
+	      'div',
+	      { id: 'userList' },
+	      React.createElement(
+	        'ul',
+	        { className: 'collection hoverable' },
+	        userLines
+	      )
+	    );
+	  }
+	});
+
+	module.exports = UserList;
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(3);
+
+	var UserListItem = React.createClass({
+	  displayName: "UserListItem",
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  render: function render() {
+
+	    return React.createElement(
+	      "li",
+	      { className: "collection-item avatar" },
+	      React.createElement("img", { src: "http://lorempixel.com/42/42/people", alt: "", className: "circle" }),
+	      React.createElement(
+	        "span",
+	        { className: "title", style: { fontWeight: "bold" } },
+	        this.props.name
+	      ),
+	      React.createElement(
+	        "p",
+	        null,
+	        "First Line ",
+	        React.createElement("br", null),
+	        "Second Line"
+	      ),
+	      React.createElement(
+	        "a",
+	        { href: "#!", className: "secondary-content" },
+	        React.createElement(
+	          "i",
+	          { className: "material-icons" },
+	          "send"
+	        )
+	      )
+	    );
+	  }
+	});
+
+	module.exports = UserListItem;
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(3);
+
+	var Stats = React.createClass({
+	  displayName: "Stats",
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  render: function render() {
+
+	    return React.createElement(
+	      "div",
+	      { id: "stats" },
+	      React.createElement(
+	        "h1",
+	        { style: {} },
+	        "Statistiques"
+	      )
+	    );
+	  }
+	});
+
+	module.exports = Stats;
 
 /***/ }
 /******/ ]);
