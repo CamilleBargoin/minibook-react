@@ -24,6 +24,47 @@ body {
 footer {position: absolute; bottom: 0; left: 0; right: 0}
 
 
+/* NAV BAR */
+
+.searchinput {
+    width: 400px !important;
+    height: 45px !important;
+    
+}
+.searchinput::-webkit-input-placeholder {
+   color: white;
+}
+
+.searchinput:-moz-placeholder { /* Firefox 18- */
+   color: white;  
+}
+
+.searchinput::-moz-placeholder {  /* Firefox 19+ */
+   color: white;  
+}
+
+.searchinput:-ms-input-placeholder {  
+   color: white;  
+}
+
+
+.searchSuggestions {
+    margin: -13px auto 0;
+    width: 430px;
+    cursor: pointer;
+}
+
+.searchSuggestions li {
+    text-align: left;
+    color: black;
+    display: block;
+    float: none;
+}
+
+.searchSuggestions li:hover {
+    background-color: #DDDDDD;
+}
+
 
 #homePage h1.appTitle {
     text-align: center;
@@ -46,13 +87,20 @@ footer {position: absolute; bottom: 0; left: 0; right: 0}
 }
 
 .friendBox {
-    width: 100px;
-    height: 100px;
-    margin: 0;
+    width: 160px;
+    height: 160px;
+    margin: 2px;
     padding: 0;
-   display: inline-block;
+    display: inline-block;
     position: relative;
     cursor: pointer;
+}
+
+.friendBox:hover {
+    border: 2px solid #111;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
 }
 
 .friendBox p {
@@ -224,4 +272,48 @@ textarea.materialize-textarea:focus:not([readonly])+label {
     font-size: 1.2em;
     font-weight: bold;
 }
+
+/* INBOX */ 
+
+#messageList .collapsible-body {
+    background-color: #FAFAFA;
+}
+
+#messageList .row {
+    height: 40px;
+    margin-bottom: 0;
+}
+
+/* PAGINATION */
+.pagination li.active {
+    background-color: #00C853;
+}
+
+/* ADMIN */
+#adminTabs .tabs li a {
+    color: #00C853;
+}
+
+#adminTabs .tabs li a.active {
+    color: #26ff6e;
+}
+
+#adminTabs .indicator {
+    background-color: #26ff6e;
+}
+
+#userList {
+    margin-top: 50px;
+}
+
+#userList ul li a {
+    color: #202020;
+    top: 39%;
+}
+
+#stats h1 {
+    color: #26ff6e;
+}
+
+/*#26ff6e, #00C853*/
 /*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJtYWluLmNzcyIsInNvdXJjZVJvb3QiOiIifQ==*/
