@@ -176,12 +176,12 @@
 	// var TodosApp = require("./components/TodosApp.jsx");
 	var Users = __webpack_require__(7);
 	var Landing = __webpack_require__(9);
-	var App = __webpack_require__(13);
+	var App = __webpack_require__(14);
 
-	var Home = __webpack_require__(14);
-	var UserProfile = __webpack_require__(22);
-	var Inbox = __webpack_require__(33);
-	var Admin = __webpack_require__(38);
+	var Home = __webpack_require__(15);
+	var UserProfile = __webpack_require__(23);
+	var Inbox = __webpack_require__(34);
+	var Admin = __webpack_require__(39);
 
 	var auth = __webpack_require__(11);
 
@@ -272,7 +272,7 @@
 
 	var React = __webpack_require__(3);
 	var LoginBox = __webpack_require__(10);
-	var RegisterBox = __webpack_require__(12);
+	var RegisterBox = __webpack_require__(13);
 
 	var Landing = React.createClass({
 	  displayName: 'Landing',
@@ -429,9 +429,11 @@
 
 /***/ },
 /* 11 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+
+	var $ = __webpack_require__(12);
 
 	var AuthService = {
 
@@ -495,6 +497,12 @@
 
 /***/ },
 /* 12 */
+/***/ function(module, exports) {
+
+	module.exports = require("jquery");
+
+/***/ },
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -624,7 +632,7 @@
 	module.exports = RegisterBox;
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -652,17 +660,17 @@
 	module.exports = App;
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(15);
-	var Footer = __webpack_require__(17);
-	var FriendsGrid = __webpack_require__(18);
+	var NavBar = __webpack_require__(16);
+	var Footer = __webpack_require__(18);
+	var FriendsGrid = __webpack_require__(19);
 
-	var Chat = __webpack_require__(20);
+	var Chat = __webpack_require__(21);
 
 	var Home = React.createClass({
 	  displayName: 'Home',
@@ -700,13 +708,13 @@
 	module.exports = Home;
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var UserSearch = __webpack_require__(16);
+	var UserSearch = __webpack_require__(17);
 
 	var NavBar = React.createClass({
 	  displayName: 'NavBar',
@@ -782,7 +790,7 @@
 	module.exports = NavBar;
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -907,7 +915,7 @@
 	module.exports = FindUser;
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1015,13 +1023,13 @@
 	module.exports = Footer;
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendBox = __webpack_require__(19);
+	var FriendBox = __webpack_require__(20);
 
 	var FriendBoxContainer = React.createClass({
 	  displayName: 'FriendBoxContainer',
@@ -1136,7 +1144,7 @@
 	module.exports = FriendBoxContainer;
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1169,13 +1177,13 @@
 	module.exports = FriendBox;
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var Messages = __webpack_require__(21);
+	var Messages = __webpack_require__(22);
 
 	var Chat = React.createClass({
 	    displayName: 'Chat',
@@ -1257,7 +1265,7 @@
 	module.exports = Chat;
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1296,20 +1304,20 @@
 	module.exports = Messages;
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(15);
-	var Footer = __webpack_require__(17);
-	var PostNewFeed = __webpack_require__(23);
-	var Wall = __webpack_require__(24);
-	var FriendsList = __webpack_require__(28);
-	var ProfileData = __webpack_require__(30);
+	var NavBar = __webpack_require__(16);
+	var Footer = __webpack_require__(18);
+	var PostNewFeed = __webpack_require__(24);
+	var Wall = __webpack_require__(25);
+	var FriendsList = __webpack_require__(29);
+	var ProfileData = __webpack_require__(31);
 
-	var ToolBar = __webpack_require__(32);
+	var ToolBar = __webpack_require__(33);
 
 	var UserProfile = React.createClass({
 	  displayName: 'UserProfile',
@@ -1473,7 +1481,7 @@
 	module.exports = UserProfile;
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1516,13 +1524,13 @@
 	module.exports = PostNewFeed;
 
 /***/ },
-/* 24 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
-	var WallFeed = __webpack_require__(25);
+	var WallFeed = __webpack_require__(26);
 
 	var Wall = React.createClass({
 	  displayName: "Wall",
@@ -1547,13 +1555,13 @@
 	module.exports = Wall;
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FeedCommentBox = __webpack_require__(26);
+	var FeedCommentBox = __webpack_require__(27);
 
 	var WallFeed = React.createClass({
 	  displayName: 'WallFeed',
@@ -1610,13 +1618,13 @@
 	module.exports = WallFeed;
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var Comment = __webpack_require__(27);
+	var Comment = __webpack_require__(28);
 
 	var FeedCommentBox = React.createClass({
 	  displayName: 'FeedCommentBox',
@@ -1640,7 +1648,7 @@
 	module.exports = FeedCommentBox;
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1675,13 +1683,13 @@
 	module.exports = Comment;
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendsListItem = __webpack_require__(29);
+	var FriendsListItem = __webpack_require__(30);
 
 	var FriendsList = React.createClass({
 	  displayName: 'FriendsList',
@@ -1707,7 +1715,7 @@
 	module.exports = FriendsList;
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1752,13 +1760,13 @@
 	module.exports = FriendsListItem;
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var ProfileDataField = __webpack_require__(31);
+	var ProfileDataField = __webpack_require__(32);
 
 	var ProfileData = React.createClass({
 	  displayName: 'ProfileData',
@@ -1789,7 +1797,7 @@
 	module.exports = ProfileData;
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1872,7 +1880,7 @@
 	module.exports = ProfileDataField;
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1933,15 +1941,15 @@
 	module.exports = ToolBar;
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(15);
-	var MessageList = __webpack_require__(34);
-	var Pagination = __webpack_require__(37);
+	var NavBar = __webpack_require__(16);
+	var MessageList = __webpack_require__(35);
+	var Pagination = __webpack_require__(38);
 
 	var Inbox = React.createClass({
 	  displayName: 'Inbox',
@@ -1969,13 +1977,13 @@
 	module.exports = Inbox;
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var MessageLine = __webpack_require__(35);
+	var MessageLine = __webpack_require__(36);
 
 	var MessageList = React.createClass({
 	  displayName: 'MessageList',
@@ -2008,13 +2016,13 @@
 	module.exports = MessageList;
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var moment = __webpack_require__(36);
+	var moment = __webpack_require__(37);
 
 	var MessageLine = React.createClass({
 	  displayName: 'MessageLine',
@@ -2072,13 +2080,13 @@
 	module.exports = MessageLine;
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports) {
 
 	module.exports = require("moment");
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2173,15 +2181,15 @@
 	module.exports = Pagination;
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(15);
-	var UserList = __webpack_require__(39);
-	var Stats = __webpack_require__(41);
+	var NavBar = __webpack_require__(16);
+	var UserList = __webpack_require__(40);
+	var Stats = __webpack_require__(42);
 
 	var Admin = React.createClass({
 	  displayName: 'Admin',
@@ -2278,7 +2286,7 @@
 	module.exports = Admin;
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2286,7 +2294,7 @@
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var React = __webpack_require__(3);
-	var UserListItem = __webpack_require__(40);
+	var UserListItem = __webpack_require__(41);
 
 	var UserList = React.createClass({
 	  displayName: 'UserList',
@@ -2314,7 +2322,7 @@
 	module.exports = UserList;
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2360,7 +2368,7 @@
 	module.exports = UserListItem;
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
