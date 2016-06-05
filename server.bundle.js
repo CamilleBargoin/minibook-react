@@ -438,58 +438,54 @@
 	var AuthService = {
 
 	  loggedIn: function loggedIn() {
-	    // return true;
 
-	    $.ajax({
-	      method: "GET",
-	      url: 'http://localhost:3000/users/secure',
-	      data: { sessionId: localStorage.getItem("sessionId") },
-	      success: function success(data, status) {
+	    if (Storage) {
+	      $.ajax({
+	        method: "GET",
+	        url: 'http://localhost:3000/users/secure',
+	        data: { sessionId: localStorage.getItem("sessionId") },
+	        success: function success(data, status) {
 
-	        console.log(data);
-	      },
-	      error: function error(jqXHR, status, _error) {
-	        Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-	      }
+	          console.log(data);
+	        },
+	        error: function error(jqXHR, status, _error) {
+	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	        }
 
-	    });
+	      });
+	    }
 	  },
 
 	  login: function login(email, password, callback) {
 
-	    // CALL API SERVER
+	    if (Storage) {
+	      $.ajax({
+	        type: 'POST',
+	        url: 'http://localhost:3000/users/login',
+	        // post payload:
+	        data: JSON.stringify({ email: email, password: password }),
+	        dataType: 'json',
+	        contentType: "application/json",
+	        success: function success(data, status, jqXHR) {
 
-	    // callback:
-	    var jwt = 123456789; // id_token
+	          if (data.error) {
+	            console.log(data.error);
+	            Materialize.toast(data.error, 3000, 'toastError');
+	          } else {
 
-	    // LoginActions.loginUser(jwt);
+	            Materialize.toast("Loggé avec succès", 2000, 'toastSuccess', function () {
 
-	    $.ajax({
-	      type: 'POST',
-	      url: 'http://localhost:3000/users/login',
-	      // post payload:
-	      data: JSON.stringify({ email: email, password: password }),
-	      dataType: 'json',
-	      contentType: "application/json",
-	      success: function success(data, status, jqXHR) {
-
-	        if (data.error) {
-	          console.log(data.error);
-	          Materialize.toast(data.error, 3000, 'toastError');
-	        } else {
-
-	          Materialize.toast("Loggé avec succès", 2000, 'toastSuccess', function () {
-
-	            localStorage.setItem('sessionId', data.sessionId);
-	            callback();
-	          });
+	              localStorage.setItem('sessionId', data.sessionId);
+	              callback();
+	            });
+	          }
+	        },
+	        error: function error(jqXHR, status, _error2) {
+	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	        }
-	      },
-	      error: function error(jqXHR, status, _error2) {
-	        Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-	      }
 
-	    });
+	      });
+	    }
 	  }
 	};
 
