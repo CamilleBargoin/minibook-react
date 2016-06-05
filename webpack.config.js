@@ -40,8 +40,10 @@ module.exports = {
         }),
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.OccurrenceOrderPlugin(),
-        new ExtractTextPlugin("[name].css")
-        // new webpack.optimize.UglifyJsPlugin()
+        new ExtractTextPlugin("[name].css"),
+
+        new webpack.EnvironmentPlugin(['NODE_ENV'])
+
       ]: [
         new HtmlWebpackPlugin({
           template: 'public/index.tpl.html',
@@ -55,6 +57,8 @@ module.exports = {
           'process.env.NODE_ENV': JSON.stringify('development')
         }),
         new ExtractTextPlugin("[name].css"),
+
+        new webpack.EnvironmentPlugin(['NODE_ENV'])
       ],
 
 

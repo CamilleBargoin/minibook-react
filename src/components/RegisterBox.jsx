@@ -1,5 +1,6 @@
 var React = require('react');
 var browserHistory = require('react-router').browserHistory;
+var config = require('../../config.js');
 
 
 var RegisterBox = React.createClass({
@@ -27,7 +28,7 @@ var RegisterBox = React.createClass({
 
     $.ajax({
         type: 'POST',
-        url: 'http://localhost:3000/users/register',
+        url: config[process.env.NODE_ENV].api + '/users/register',
         // post payload:
         data: JSON.stringify(newUser),
         dataType: 'json',

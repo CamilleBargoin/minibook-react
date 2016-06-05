@@ -1,17 +1,16 @@
 
 var $ = require("jquery");
 
-
+var config = require('../config.js');
 
 var AuthService = {
 
 
   loggedIn: function() {
-    
   if (Storage) {
     $.ajax({
         method: "GET",
-          url: 'http://localhost:3000/users/secure',
+          url: config[process.env.NODE_ENV].api + '/users/secure',
           data: {sessionId: localStorage.getItem("sessionId")},
           success: function(data, status) {
 
@@ -32,9 +31,10 @@ var AuthService = {
   login(email, password, callback) {
 
 if (Storage) {
+
       $.ajax({
           type: 'POST',
-          url: 'http://localhost:3000/users/login',
+          url: config[process.env.NODE_ENV].api + '/users/login',
           // post payload:
           data: JSON.stringify({email: email, password: password}),
           dataType: 'json',
