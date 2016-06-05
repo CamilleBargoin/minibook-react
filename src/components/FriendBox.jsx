@@ -5,6 +5,11 @@ var browserHistory = require('react-router').browserHistory;
 
 var FriendBox = React.createClass({
 
+  componentDidMount() {
+      
+  },
+
+
   openFriendProfile() {
 
     browserHistory.push('/profile/' + this.props.name);

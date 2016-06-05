@@ -9,7 +9,9 @@ var FriendBoxContainer = React.createClass({
     };
   },
 
-  
+  componentDidMount() {
+      $('.friendBox.tooltipped').tooltip({delay: 50});    
+  },
 
   render() {
 

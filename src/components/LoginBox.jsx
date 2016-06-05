@@ -6,18 +6,26 @@ var LoginBox = React.createClass({
 
   getInitialState() {
     return {
-      login: "",
+      email: "",
       password: ""
     };
   },
 
+  updateField(e) {
+    var obj = {};
+    obj[e.target.name] = e.target.value;
+    this.setState(obj);
+  },
+
   login() {
+console.log("login action");
 
-    // Auth.login(this.state.login, this.state.password).catch(function(err) {
-    //   console.log("login error", err);
-    // });
+    Auth.login(this.state.email, this.state.password, function() {
+      alert("YEAH");
+      console.log(window.document.cookie);
+    });
 
-    browserHistory.push('/home');
+    // browserHistory.push('/home');
   },
 
   render() {
@@ -26,11 +34,11 @@ var LoginBox = React.createClass({
         <form className="col s4 offset-s4 hoverable">
           <div className="row">
             <div className="input-field col s12">
-              <input id="email" type="text" className="validate" />
+              <input id="email" name="email" type="text" className="validate" onChange={this.updateField}/>
               <label for="email">e-mail</label>
             </div>
             <div className="input-field col s12">
-              <input id="password" type="text" className="validate" />
+              <input id="password" name="password" type="text" className="validate" onChange={this.updateField}/>
               <label for="password">password</label>
             </div>
           </div>
