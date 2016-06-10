@@ -39,10 +39,10 @@ module.exports = (
 
 
 function requireAuth(nextState, replace) {
-  if (!auth.loggedIn()) {
+  auth.loggedIn(function() {
     replace({
       pathname: '/',
       state: { nextPathname: nextState.location.pathname }
-    })
-  }
+    });
+  }); 
 }

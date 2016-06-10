@@ -16,10 +16,10 @@ var RegisterBox = React.createClass({
     e.preventDefault();
 
     var newUser = {
-      firstName: this.refs.firstname.value,
-      lastName: this.refs.lastname.value,
-      email: this.refs.email.value,
-      password: this.refs.password.value
+      firstname: this.refs['firstname'].value,
+      lastname: this.refs['lastname'].value,
+      email: this.refs['email'].value,
+      password: this.refs['password'].value
     };
     
     console.log(newUser);

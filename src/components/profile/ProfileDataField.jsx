@@ -1,4 +1,5 @@
 var React = require('react');
+var config = require('../../../config.js');
 
 
 var ProfileDataField = React.createClass({
@@ -18,18 +19,59 @@ var ProfileDataField = React.createClass({
   save(e) {
     e.preventDefault();
 
-    this.props.updateProfile({
-      label: this.props.fieldLabel,
-      value: this.refs.input.value
-    });
+    const self = this;
+    const updatedFields = {};
 
-    this.setState({
-      edit: false
-    });
+    updatedFields[this.props.fieldLabel] = this.refs.input.value;
+
+
+
+    $.ajax({
+        type: 'POST',
+        url: config[process.env.NODE_ENV].api + '/users/update',
+        // post payload:
+        data: JSON.stringify({
+          userId: localStorage.getItem('userId'), 
+          sessionId: localStorage.getItem('sessionId'),
+          updatedFields: updatedFields
+        }),
+        dataType: 'json',
+        contentType: "application/json",
+        success: function(data, status, jqXHR) {
+
+
+           if (data.error) {
+              console.log(data.error);
+              Materialize.toast(data.error, 3000, 'toastError');
+           }
+           else {
+
+                Materialize.toast("Champs modifié avec succès", 2000, 'toastSuccess', function() {
+                  
+                  self.props.updateProfile({
+                    label: self.props.fieldLabel,
+                    value: self.refs.input.value
+                  });
+
+                  self.setState({
+                    edit: false
+                  });
+
+                });
+           }
+        },
+        error: function(jqXHR, status, error) {
+          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+        }
+
+    }); 
+
+
+    
   },
 
   render() {
-    console.log(this.state.edit);
+
     if (this.state.edit) {
       return (
         <li className="collection-item row">

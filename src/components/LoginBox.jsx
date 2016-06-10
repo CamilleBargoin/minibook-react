@@ -21,11 +21,10 @@ var LoginBox = React.createClass({
 console.log("login action");
 
     Auth.login(this.state.email, this.state.password, function() {
-      alert("YEAH");
       console.log(window.document.cookie);
+      browserHistory.push('/home');
     });
 
-    // browserHistory.push('/home');
   },
 
   render() {
