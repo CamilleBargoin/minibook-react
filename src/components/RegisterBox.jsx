@@ -43,7 +43,7 @@ var RegisterBox = React.createClass({
          else {
 
             Materialize.toast("Ton compte vient d'être créé!", 2000, 'toastSuccess', function() {
-              req.session.test = "ceciestuntest";
+              //req.session.test = "ceciestuntest";
               browserHistory.push('/home');
             });
          }

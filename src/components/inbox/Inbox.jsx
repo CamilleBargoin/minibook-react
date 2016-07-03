@@ -1,5 +1,5 @@
 var React = require('react');
-var NavBar = require('../NavBar.jsx');
+var NavBar = require('../navbar/NavBar.jsx');
 var MessageList = require('./MessageList.jsx');
 var Pagination = require('../Pagination.jsx');
 

@@ -1,17 +1,33 @@
 var React = require('react');
-var NavBar = require('../NavBar.jsx');
+var NavBar = require('../navbar/NavBar.jsx');
 var Footer = require('../Footer.jsx');
 var FriendsGrid = require('./FriendsGrid.jsx');
+var UserService = require('../../services/UserService.jsx');
 
 var Chat = require('../chat/Chat.jsx');
 
 var Home = React.createClass({
 
+
+
   getInitialState() {
     return {
-      chat: null
+      chat: null,
+      user: null
     };
   },
+
+
+  componentDidMount() {
+      const self = this;
+
+      UserService.get(localStorage.getItem('userId'), function(user) {
+          self.setState({
+            user: user
+          });
+      });
+  },
+
 
 
   openChat() {
@@ -38,7 +54,7 @@ var Home = React.createClass({
 
     return (
       <div>
-         <NavBar openChat={this.openChat} search="true"/>
+         <NavBar openChat={this.openChat} search="true" user={this.state.user}/>
          <FriendsGrid />
             {chat}
 

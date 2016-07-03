@@ -19,55 +19,18 @@ var ProfileDataField = React.createClass({
   save(e) {
     e.preventDefault();
 
-    const self = this;
-    const updatedFields = {};
-
-    updatedFields[this.props.fieldLabel] = this.refs.input.value;
 
 
+    this.props.updateProfile({
+      label: this.props.fieldLabel,
+      value: this.refs.input.value
+    });
 
-    $.ajax({
-        type: 'POST',
-        url: config[process.env.NODE_ENV].api + '/users/update',
-        // post payload:
-        data: JSON.stringify({
-          userId: localStorage.getItem('userId'), 
-          sessionId: localStorage.getItem('sessionId'),
-          updatedFields: updatedFields
-        }),
-        dataType: 'json',
-        contentType: "application/json",
-        success: function(data, status, jqXHR) {
+    this.setState({
+      edit: false
+    });
 
-
-           if (data.error) {
-              console.log(data.error);
-              Materialize.toast(data.error, 3000, 'toastError');
-           }
-           else {
-
-                Materialize.toast("Champs modifié avec succès", 2000, 'toastSuccess', function() {
-                  
-                  self.props.updateProfile({
-                    label: self.props.fieldLabel,
-                    value: self.refs.input.value
-                  });
-
-                  self.setState({
-                    edit: false
-                  });
-
-                });
-           }
-        },
-        error: function(jqXHR, status, error) {
-          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-        }
-
-    }); 
-
-
-    
+       
   },
 
   render() {

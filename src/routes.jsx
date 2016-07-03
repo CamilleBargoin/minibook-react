@@ -12,6 +12,7 @@ var Home = require('./components/home/Home.jsx');
 var UserProfile = require('./components/profile/UserProfile.jsx');
 var Inbox = require('./components/inbox/Inbox.jsx');
 var Admin = require('./components/admin/Admin.jsx');
+var Logout = require('./components/logout.jsx');
 
 var auth = require("./auth.js");
 
@@ -19,30 +20,37 @@ var auth = require("./auth.js");
 module.exports = (
   <Route path="/" component={App}>
     <IndexRoute component={Landing}/>
-    <Route path="/users" component={Users}>
+
+    <Route path="/home" component={Home} onEnter={requireCredentials}>
     </Route>
-    {/*<Route path="/todos" component={TodosApp}>
-    </Route>*/}
-    <Route path="/home" component={Home} onEnter={requireAuth}>
+
+    <Route path="/profile" component={UserProfile} onEnter={requireCredentials}>
     </Route>
-    <Route path="/profile" component={UserProfile} onEnter={requireAuth}>
+
+    <Route path="/profile/:username" component={UserProfile} onEnter={requireCredentials}>
     </Route>
-    <Route path="/profile/:username" component={UserProfile} onEnter={requireAuth}>
+
+    <Route path="/inbox" component={Inbox} onEnter={requireCredentials}>
     </Route>
-    <Route path="/inbox" component={Inbox} onEnter={requireAuth}>
+
+    <Route path="/admin" component={Admin} onEnter={requireCredentials}>
     </Route>
-    <Route path="/admin" component={Admin} onEnter={requireAuth}>
+
+     <Route path="/logout" component={Logout} >
     </Route>
   </Route>
 );
 
 
 
-function requireAuth(nextState, replace) {
+function requireCredentials(nextState, replace, next) {
+
   auth.loggedIn(function() {
-    replace({
-      pathname: '/',
-      state: { nextPathname: nextState.location.pathname }
-    });
+    next();
+  }, function() {
+    replace("/");
+    next();
   }); 
+  
+
 }

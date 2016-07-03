@@ -16,3 +16,13 @@ var css = require("./main.css");
 ReactDOM.render((
     <Router routes={routes} history={browserHistory} />
 ), document.getElementById('app'));
+
+
+
+Array.prototype.propSort = function propSort(prop) {
+  return this.sort(function(a, b) { return +a[prop] - +b[prop]; });
+};
+
+Array.prototype.propAsort = function propSort(prop) {
+  return this.sort(function(a, b) { return +b[prop] - +a[prop]; });
+};

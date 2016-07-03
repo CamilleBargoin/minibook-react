@@ -1,7 +1,7 @@
 var React = require('react');
 var Comment = require('../Comment.jsx');
 
-var FeedCommentBox = React.createClass({
+var PostCommentsList = React.createClass({
 
   getInitialState() {
     return {
@@ -14,7 +14,7 @@ var FeedCommentBox = React.createClass({
 
         const comments = this.props.comments.map(function(comment, i) {
           return (
-            <Comment body={comment.body} author={comment.author} key={i} />
+            <Comment comment={comment} key={i} />
           );
         });
 
@@ -29,4 +29,4 @@ var FeedCommentBox = React.createClass({
 
 });
 
-module.exports = FeedCommentBox;
+module.exports = PostCommentsList;
