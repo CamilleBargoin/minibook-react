@@ -158,29 +158,41 @@
 	var Inbox = __webpack_require__(39);
 	var Admin = __webpack_require__(44);
 	var Logout = __webpack_require__(48);
+	var Forbidden = __webpack_require__(49);
 
 	var auth = __webpack_require__(11);
 
 	module.exports = React.createElement(
-	    Route,
-	    { path: '/', component: App },
-	    React.createElement(IndexRoute, { component: Landing }),
-	    React.createElement(Route, { path: '/home', component: Home, onEnter: requireCredentials }),
-	    React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireCredentials }),
-	    React.createElement(Route, { path: '/profile/:id', component: UserProfile, onEnter: requireCredentials }),
-	    React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireCredentials }),
-	    React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireCredentials }),
-	    React.createElement(Route, { path: '/logout', component: Logout })
+	  Route,
+	  { path: '/', component: App },
+	  React.createElement(IndexRoute, { component: Landing }),
+	  React.createElement(Route, { path: '/home', component: Home, onEnter: requireCredentials }),
+	  React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireCredentials }),
+	  React.createElement(Route, { path: '/profile/:id', component: UserProfile, onEnter: requireCredentials }),
+	  React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireCredentials }),
+	  React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireAdminCredentials }),
+	  React.createElement(Route, { path: '/logout', component: Logout }),
+	  React.createElement(Route, { path: '/forbidden', component: Forbidden })
 	);
 
 	function requireCredentials(nextState, replace, next) {
 
-	    auth.loggedIn(function () {
-	        next();
-	    }, function () {
-	        replace("/");
-	        next();
-	    });
+	  auth.loggedIn(function () {
+	    next();
+	  }, function () {
+	    replace("/");
+	    next();
+	  });
+	}
+
+	function requireAdminCredentials(nextState, replace, next) {
+
+	  auth.loggedInAdmin(function () {
+	    next();
+	  }, function () {
+	    replace("/forbidden");
+	    next();
+	  });
 	}
 
 /***/ },
@@ -442,6 +454,34 @@
 	    }
 	  },
 
+	  loggedInAdmin: function loggedInAdmin(_success2, error) {
+
+	    if (Storage) {
+	      $.ajax({
+	        method: "GET",
+	        url: config[process.env.NODE_ENV].api + '/users/secureAdmin',
+	        data: { sessionId: localStorage.getItem("sessionId") },
+	        success: function success(data, status) {
+
+	          if (data.success) {
+	            console.log("loggedIn success");
+	            console.log(data);
+	            _success2();
+	          } else {
+	            console.log(data);
+	            error();
+	          }
+	        },
+	        error: function error(jqXHR, status, _error2) {
+	          console.log("loggedIn error");
+	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	          _error2();
+	        }
+
+	      });
+	    }
+	  },
+
 	  login: function login(email, password, callback) {
 
 	    if (Storage) {
@@ -468,7 +508,7 @@
 	            });
 	          }
 	        },
-	        error: function error(jqXHR, status, _error2) {
+	        error: function error(jqXHR, status, _error3) {
 	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	        }
 
@@ -493,7 +533,7 @@
 	            callback();
 	          }
 	        },
-	        error: function error(jqXHR, status, _error3) {
+	        error: function error(jqXHR, status, _error4) {
 	          console.log("logout error");
 	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	        }
@@ -991,19 +1031,20 @@
 
 	    get: function get(userId, callback) {
 
-	        $.ajax({
-	            method: "GET",
-	            url: config[process.env.NODE_ENV].api + '/users/' + userId,
-	            data: { sessionId: localStorage.getItem("sessionId") },
-	            success: function success(data, status) {
+	        var payload = {
+	            sessionId: localStorage.getItem("sessionId")
+	        };
 
-	                if (callback) callback(data);
-	            },
-	            error: function error(jqXHR, status, _error) {
-	                console.log("find user by id error");
-	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-	            }
-	        });
+	        this.getHTTPRequest(config[process.env.NODE_ENV].api + '/users/' + userId, payload, callback);
+	    },
+
+	    getAll: function getAll(callback) {
+
+	        var payload = {
+	            sessionId: localStorage.getItem('sessionId')
+	        };
+
+	        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/all', payload, callback);
 	    },
 
 	    getFriends: function getFriends(userId, callback) {
@@ -1013,26 +1054,7 @@
 	            sessionId: localStorage.getItem('sessionId')
 	        };
 
-	        $.ajax({
-	            type: 'POST',
-	            url: config[process.env.NODE_ENV].api + '/users/friends',
-	            // post payload:
-	            data: JSON.stringify(payload),
-	            dataType: 'json',
-	            contentType: "application/json",
-	            success: function success(data, status, jqXHR) {
-
-	                if (data.error) {
-	                    Materialize.toast(data.error, 3000, 'toastError');
-	                } else {
-	                    if (callback) callback(data);
-	                }
-	            },
-	            error: function error(jqXHR, status, _error2) {
-	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-	            }
-
-	        });
+	        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/friends', payload, callback);
 	    },
 
 	    update: function update(userId, fields, callback) {
@@ -1043,53 +1065,17 @@
 	            updatedFields: fields
 	        };
 
-	        $.ajax({
-	            type: 'POST',
-	            url: config[process.env.NODE_ENV].api + '/users/update',
-	            // post payload:
-	            data: JSON.stringify(payload),
-	            dataType: 'json',
-	            contentType: "application/json",
-	            success: function success(data, status, jqXHR) {
-
-	                if (data.error) {
-	                    Materialize.toast(data.error, 3000, 'toastError');
-	                } else {
-	                    if (callback) callback();
-	                }
-	            },
-	            error: function error(jqXHR, status, _error3) {
-	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-	            }
-
-	        });
+	        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/update', payload, callback);
 	    },
 
 	    search: function search(string, callback) {
+
 	        var payload = {
 	            string: string,
 	            sessionId: localStorage.getItem('sessionId')
 	        };
 
-	        $.ajax({
-	            type: 'POST',
-	            url: config[process.env.NODE_ENV].api + '/users/search',
-	            data: JSON.stringify(payload),
-	            dataType: 'json',
-	            contentType: "application/json",
-	            success: function success(data, status, jqXHR) {
-
-	                if (data.error) {
-	                    Materialize.toast(data.error, 3000, 'toastError');
-	                } else {
-	                    if (callback) callback(data);
-	                }
-	            },
-	            error: function error(jqXHR, status, _error4) {
-	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-	            }
-
-	        });
+	        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/search', payload, callback);
 	    },
 
 	    sendInvite: function sendInvite(user, callback) {
@@ -1099,49 +1085,7 @@
 	            userId: user._id
 	        };
 
-	        $.ajax({
-	            type: "POST",
-	            url: config[process.env.NODE_ENV].api + '/users/invite',
-	            data: JSON.stringify(payload),
-	            dataType: 'json',
-	            contentType: "application/json",
-	            success: function success(data, status, jqXHR) {
-
-	                if (data.error) {
-	                    Materialize.toast(data.error, 3000, 'toastError');
-	                } else {
-	                    if (callback) callback(data);
-	                }
-	            },
-	            error: function error(jqXHR, status, _error5) {
-	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-	            }
-	        });
-	    },
-
-	    getRequests: function getRequests(callback) {
-
-	        var payload = {
-	            sessionId: localStorage.getItem('sessionId')
-	        };
-
-	        $.ajax({
-	            type: "POST",
-	            url: config[process.env.NODE_ENV].api + '/users/requests',
-	            data: JSON.stringify(payload),
-	            dataType: 'json',
-	            contentType: "application/json",
-	            success: function success(data, status, jqXHR) {
-	                if (data.error) {
-	                    Materialize.toast(data.error, 3000, 'toastError');
-	                } else {
-	                    if (callback) callback(data);
-	                }
-	            },
-	            error: function error(jqXHR, status, _error6) {
-	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-	            }
-	        });
+	        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/invite', payload, callback);
 	    },
 
 	    befriend: function befriend(newFriendId, callback) {
@@ -1151,55 +1095,48 @@
 	            friendId: newFriendId
 	        };
 
-	        console.log(payload);
+	        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/befriend', payload, callback);
+	    },
+
+	    postHTTPRequest: function postHTTPRequest(url, payload, callback) {
 
 	        $.ajax({
-	            type: "POST",
-	            url: config[process.env.NODE_ENV].api + '/users/befriend',
+	            type: 'POST',
+	            url: url,
+	            // post payload:
 	            data: JSON.stringify(payload),
 	            dataType: 'json',
 	            contentType: "application/json",
 	            success: function success(data, status, jqXHR) {
+
 	                if (data.error) {
 	                    Materialize.toast(data.error, 3000, 'toastError');
 	                } else {
-
-	                    if (callback) callback(null, data);
+	                    if (callback) callback(data);
 	                }
 	            },
-	            error: function error(jqXHR, status, _error7) {
+	            error: function error(jqXHR, status, _error) {
 	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	            }
 	        });
 	    },
 
-	    deleteRequest: function deleteRequest(requestId, callback) {
-
-	        var payload = {
-	            sessionId: localStorage.getItem('sessionId'),
-	            requestId: requestId
-	        };
+	    getHTTPRequest: function getHTTPRequest(url, payload, callback) {
 
 	        $.ajax({
-	            type: "POST",
-	            url: config[process.env.NODE_ENV].api + '/users/deleteRequest',
-	            data: JSON.stringify(payload),
-	            dataType: 'json',
-	            contentType: "application/json",
-	            success: function success(data, status, jqXHR) {
-	                if (data.error) {
-	                    Materialize.toast(data.error, 3000, 'toastError');
-	                } else {
+	            method: "GET",
+	            url: url,
+	            data: payload,
+	            success: function success(data, status) {
 
-	                    if (callback) callback(data);
-	                }
+	                if (callback) callback(data);
 	            },
-	            error: function error(jqXHR, status, _error8) {
+	            error: function error(jqXHR, status, _error2) {
+	                console.log("find user by id error");
 	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	            }
 	        });
 	    }
-
 	};
 
 	module.exports = UserService;
@@ -1510,7 +1447,7 @@
 	    var tooltip = void 0;
 
 	    if (!lastPost || lastPost == "") {
-	      var statusArray = ["Hasta la vista baby !", "Why so serious ?", "May the force be with you.", "I'll be back.", "Are you not entertained ?", "You talkin' to me ?", "I love the smell of Napalm in the morning", "I am your father", "I’m the king of the world !", "It’s alive! It’s alive !", "You shall not pass !", "Madness ? This is Sparta !"];
+	      var statusArray = ["Hasta la vista baby !", "Why so serious ?", "May the force be with you.", "I'll be back.", "Are you not entertained ?", "You talkin' to me ?", "I love the smell of Napalm in the morning", "I am your father", "I’m the king of the world !", "It’s alive! It’s alive !", "You shall not pass !", "Madness ? This is Sparta !", "Winter is coming."];
 	      tooltip = statusArray[Math.floor(Math.random() * statusArray.length)];
 	    } else if (lastPost.length < 50) tooltip = lastPost;else {
 	      tooltip = lastPost.substr(0, 50) + "...";
@@ -1520,9 +1457,17 @@
 
 	    var backgroundColor = colorArray[Math.floor(Math.random() * colorArray.length)];
 
+	    console.log(this.props.friendship.user.avatar);
+	    var avatar = React.createElement('div', null);
+	    if (this.props.friendship.user.avatar) {
+	      var url = this.props.friendship.user.avatar.replace("/upload/", "/upload/w_160,h_160,c_fill/");
+	      avatar = React.createElement('img', { src: url });
+	    }
+
 	    return React.createElement(
 	      'div',
 	      { onClick: this.openFriendProfile, className: 'friendBox hoverable tooltipped', 'data-position': 'bottom', 'data-delay': '50', 'data-tooltip': tooltip, style: { backgroundColor: backgroundColor } },
+	      avatar,
 	      React.createElement(
 	        'p',
 	        null,
@@ -1691,9 +1636,29 @@
 	    };
 	  },
 	  componentDidMount: function componentDidMount() {
+
+	    var self = this;
 	    $('.profile_parallax').parallax();
 
-	    // localStorage.getItem('userId')
+	    $('#profilePicture').append($.cloudinary.unsigned_upload_tag("ygdxw3yr", { cloud_name: 'minibook' }));
+
+	    $('.cloudinary_fileupload').hide();
+
+	    $('.cloudinary_fileupload').bind('cloudinarydone', function (e, data) {
+
+	      console.log(data.result);
+	      // let user = self.state.user;
+	      // user.avatar = data.result.secure_url;
+	      // self.setState({
+	      //   user: user
+	      // });
+
+	      self.updateProfile({
+	        label: "avatar",
+	        value: data.result.secure_url
+	      });
+	    });
+
 	    var self = this;
 	    this.findUserWallById(this.props.params.id, function (wall) {
 
@@ -1780,6 +1745,9 @@
 	      }
 	    });
 	  },
+	  selectAvatar: function selectAvatar() {
+	    $('.cloudinary_fileupload').trigger('click');
+	  },
 	  updateProfile: function updateProfile(field) {
 
 	    var user = this.state.user;
@@ -1802,6 +1770,19 @@
 
 	    if (this.state.display === 0) displayContent = React.createElement(Wall, { posts: this.state.wall, postComment: this.postComment });else if (this.state.display == 1) displayContent = React.createElement(FriendsList, null);else if (this.state.display == 2) displayContent = React.createElement(ProfileData, { profile: this.state.user, updateProfile: this.updateProfile });
 
+	    console.log(this.state.user);
+
+	    var avatar = React.createElement(
+	      'i',
+	      { className: 'large material-icons' },
+	      'add'
+	    );
+	    if (this.state.user.avatar) {
+	      var url = this.state.user.avatar;
+	      url = url.replace("/upload/", "/upload/w_200,h_200,c_fill/");
+	      avatar = React.createElement('img', { src: url });
+	    }
+
 	    return React.createElement(
 	      'div',
 	      { id: 'userProfile' },
@@ -1816,12 +1797,8 @@
 	        ),
 	        React.createElement(
 	          'div',
-	          { id: 'profilePicture', className: 'hoverable' },
-	          React.createElement(
-	            'i',
-	            { className: 'large material-icons' },
-	            'add'
-	          )
+	          { id: 'profilePicture', className: 'hoverable', onClick: this.selectAvatar },
+	          avatar
 	        ),
 	        React.createElement(
 	          'div',
@@ -2659,18 +2636,50 @@
 	var NavBar = __webpack_require__(17);
 	var UserList = __webpack_require__(45);
 	var Stats = __webpack_require__(47);
+	var UserService = __webpack_require__(19);
 
 	var Admin = React.createClass({
 	  displayName: 'Admin',
 	  getInitialState: function getInitialState() {
-	    return {};
+	    return {
+	      users: []
+	    };
 	  },
 	  componentDidMount: function componentDidMount() {
 	    $('#adminTabs ul.tabs').tabs();
+
+	    this.getUsers();
+	  },
+	  getUsers: function getUsers() {
+
+	    var self = this;
+	    UserService.getAll(function (users) {
+	      self.setState({
+	        users: users
+	      });
+	    });
 	  },
 	  render: function render() {
 
-	    var users = [{ name: "Chuck Norris" }, { name: "Jean CLaude VanDamme" }, { name: "Steven Seagal" }, { name: "Kurt Russel" }, { name: "Jon Snow" }, { name: "Beyonce" }, { name: "John Rambo" }, { name: "Chuck Norris" }, { name: "Jean CLaude VanDamme" }, { name: "Steven Seagal" }, { name: "Kurt Russel" }, { name: "Jon Snow" }, { name: "Beyonce" }, { name: "John Rambo" }];
+	    // var users = [
+	    //   {name: "Chuck Norris"},
+	    //   {name: "Jean CLaude VanDamme"},
+	    //   {name: "Steven Seagal"},
+	    //   {name: "Kurt Russel"},
+	    //   {name: "Jon Snow"},
+	    //   {name: "Beyonce"},
+	    //   {name: "John Rambo"},
+	    //   {name: "Chuck Norris"},
+	    //   {name: "Jean CLaude VanDamme"},
+	    //   {name: "Steven Seagal"},
+	    //   {name: "Kurt Russel"},
+	    //   {name: "Jon Snow"},
+	    //   {name: "Beyonce"},
+	    //   {name: "John Rambo"}
+	    // ];
+	    //
+
+	    var users = this.state.users;
 
 	    return React.createElement(
 	      'div',
@@ -2772,6 +2781,8 @@
 	  },
 	  render: function render() {
 
+	    console.log(this.props.users);
+
 	    var userLines = this.props.users.map(function (user, i) {
 	      return React.createElement(UserListItem, _extends({}, user, { key: i }));
 	    });
@@ -2779,6 +2790,11 @@
 	    return React.createElement(
 	      'div',
 	      { id: 'userList' },
+	      React.createElement(
+	        'h1',
+	        null,
+	        'Liste des utilisateurs'
+	      ),
 	      React.createElement(
 	        'ul',
 	        { className: 'collection hoverable' },
@@ -2797,6 +2813,7 @@
 	"use strict";
 
 	var React = __webpack_require__(3);
+	var moment = __webpack_require__(42);
 
 	var UserListItem = React.createClass({
 	  displayName: "UserListItem",
@@ -2805,25 +2822,77 @@
 	  },
 	  render: function render() {
 
+	    console.log(this.props);
+
+	    var registerDate = moment(this.props.created_at);
+
+	    var url = "";
+	    if (this.props.avatar) {
+	      url = this.props.avatar.replace("/upload/", "/upload/w_42,h_42,c_fill/");
+	    }
+
+	    var friendships = this.props.friends;
+	    var friendsNumber = 0,
+	        sentInvitesNumber = 0,
+	        receivedInvitesNumber = 0;
+
+	    for (var i = 0; i < friendships.length; i++) {
+	      if (friendships[i].status == "accepted") friendsNumber++;else if (friendships[i].status == "pending") receivedInvitesNumber++;else if (friendships[i].status == "sentRequest") receivedInvitesNumber++;
+	    }
+
+	    var cssClass = "collection-item avatar";
+
+	    if (this.props.role == 2) {
+	      cssClass += " admin";
+	    } else if (this.props.role == 3) {
+	      cssClass += " blocked";
+	    }
+
 	    return React.createElement(
 	      "li",
-	      { className: "collection-item avatar" },
-	      React.createElement("img", { src: "http://lorempixel.com/42/42/people", alt: "", className: "circle" }),
+	      { className: cssClass },
+	      React.createElement(
+	        "a",
+	        { href: "/profile/" + this.props._id },
+	        React.createElement("img", { src: url, alt: "", className: "circle" })
+	      ),
 	      React.createElement(
 	        "span",
 	        { className: "title", style: { fontWeight: "bold" } },
-	        this.props.name
+	        this.props.firstname + " " + this.props.lastname
 	      ),
 	      React.createElement(
 	        "p",
 	        null,
-	        "First Line ",
+	        "Date d'inscription: ",
+	        React.createElement(
+	          "strong",
+	          null,
+	          registerDate.format("DD/MM/YYYY")
+	        ),
 	        React.createElement("br", null),
-	        "Second Line"
+	        "Amis: ",
+	        React.createElement(
+	          "strong",
+	          null,
+	          friendsNumber
+	        ),
+	        " / Invitations envoyées: ",
+	        React.createElement(
+	          "strong",
+	          null,
+	          sentInvitesNumber
+	        ),
+	        " / Invitations en attentes: ",
+	        React.createElement(
+	          "strong",
+	          null,
+	          receivedInvitesNumber
+	        )
 	      ),
 	      React.createElement(
 	        "a",
-	        { href: "#!", className: "secondary-content" },
+	        { href: "/profile/" + this.props._id, className: "secondary-content" },
 	        React.createElement(
 	          "i",
 	          { className: "material-icons" },
@@ -2895,7 +2964,7 @@
 	  componentDidMount: function componentDidMount() {
 	    setTimeout(function () {
 	      browserHistory.push('/');
-	    }, 3000);
+	    }, 2000);
 	  },
 	  render: function render() {
 
@@ -2905,11 +2974,68 @@
 
 	    return React.createElement(
 	      'div',
-	      { className: '' },
+	      { className: 'container' },
 	      React.createElement(
-	        'p',
-	        { style: { color: "white" } },
-	        message
+	        'div',
+	        { className: 'row', style: { paddingTop: "15%" } },
+	        React.createElement(
+	          'div',
+	          { className: 'col s12' },
+	          React.createElement(
+	            'p',
+	            { style: { color: "white" } },
+	            message
+	          )
+	        )
+	      )
+	    );
+	  }
+	});
+
+	module.exports = Logout;
+
+/***/ },
+/* 49 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var Auth = __webpack_require__(11);
+	var browserHistory = __webpack_require__(5).browserHistory;
+
+	var Logout = React.createClass({
+	  displayName: 'Logout',
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  componentWillMount: function componentWillMount() {},
+	  render: function render() {
+
+	    return React.createElement(
+	      'div',
+	      { className: 'container' },
+	      React.createElement(
+	        'div',
+	        { className: 'row', style: { paddingTop: "15%" } },
+	        React.createElement(
+	          'div',
+	          { className: 'col s12' },
+	          React.createElement(
+	            'p',
+	            { style: { color: "white" } },
+	            'Désolé, Vous n\'avez pas accès à cette partie du site :\'('
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'col s1' },
+	          React.createElement(
+	            'a',
+	            { className: 'waves-effect waves-light btn col s12 green accent-4', href: '/' },
+	            'Accueil'
+	          )
+	        )
 	      )
 	    );
 	  }
