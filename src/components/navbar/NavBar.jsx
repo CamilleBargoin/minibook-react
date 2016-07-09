@@ -1,7 +1,7 @@
 var React = require('react');
 var NavBarSearch = require('./NavBarSearch.jsx');
 var UserService = require('../../services/UserService.jsx');
-    var browserHistory = require('react-router').browserHistory;
+var browserHistory = require('react-router').browserHistory;
 
 var NavBarRequests = require("./NavBarRequests.jsx");
 

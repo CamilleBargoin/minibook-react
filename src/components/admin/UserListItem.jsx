@@ -1,5 +1,7 @@
 var React = require('react');
 var moment = require("moment");
+var browserHistory = require('react-router').browserHistory;
+
 
 var UserListItem = React.createClass({
 
@@ -7,6 +9,10 @@ var UserListItem = React.createClass({
     return {
     
     };
+  },
+
+  displayProfile() {
+      browserHistory.push("/profile/" + this.props._id);
   },
 
   
@@ -47,12 +53,12 @@ var UserListItem = React.createClass({
     return (
       
       <li className={cssClass}>
-        <a href= {"/profile/" + this.props._id}><img src={url} alt="" className="circle" /></a>
+        <a onClick={this.displayProfile} ><img src={url} alt="" className="circle" /></a>
         <span className="title" style={{fontWeight:"bold"}}>{this.props.firstname + " " + this.props.lastname}</span>
         <p>Date d&#39;inscription: <strong>{registerDate.format("DD/MM/YYYY")}</strong><br/>
            Amis: <strong>{friendsNumber}</strong> / Invitations envoyées: <strong>{sentInvitesNumber}</strong> / Invitations en attentes: <strong>{receivedInvitesNumber}</strong>
         </p>
-        <a href= {"/profile/" + this.props._id}  className="secondary-content"><i className="material-icons">send</i></a>
+        <a onClick={this.displayProfile}  className="secondary-content"><i className="material-icons">send</i></a>
       </li>
             
     );

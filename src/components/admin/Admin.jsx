@@ -12,6 +12,9 @@ var Admin = React.createClass({
     };
   },
 
+  contextTypes: {
+    router: React.PropTypes.object
+  },
 
   componentDidMount() {
       $('#adminTabs ul.tabs').tabs();  
