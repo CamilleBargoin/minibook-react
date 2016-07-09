@@ -25,6 +25,11 @@ footer {position: absolute; bottom: 0; left: 0; right: 0}
 
 
 /* NAV BAR */
+.brand-logo {
+    position: absolute;
+    left: 15px;
+    z-index: 10;
+}
 
 .searchinput {
     width: 400px !important;
@@ -59,12 +64,61 @@ footer {position: absolute; bottom: 0; left: 0; right: 0}
     color: black;
     display: block;
     float: none;
+    position: relative;
 }
 
 .searchSuggestions li:hover {
     background-color: #DDDDDD;
 }
 
+.searchSuggestions li .send-invite-icon {
+    position: absolute;
+    right: 20px;
+    top: 0;
+    line-height: 43px;
+    color: #444;
+}
+
+.searchSuggestions li .send-invite-icon:hover {
+    color: black;
+}
+
+
+.requestsBadge {
+    position: absolute;
+    top: 9px;
+    right: 0px;
+    background-color: red;
+    color: white;
+    height: 17px;
+    width: 17px;
+    border-radius: 17px;
+    padding: 0;
+    line-height: 17px;
+    text-align: center;
+    font-size: 12px;
+}
+
+
+.requestsList {
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    width: 250px;
+    max-height: 200px;
+    background-color: transparent;
+}
+
+
+.requests-item {
+    position: relative;
+}
+
+.requests-item a {
+    position: absolute;
+    right: 5px;
+    top: 2px;
+}
 
 #homePage h1.appTitle {
     text-align: center;
@@ -147,11 +201,11 @@ footer {position: absolute; bottom: 0; left: 0; right: 0}
     color: white;
 }
 
-.postNewFeedBox {
+.postInputComponent {
     padding-top: 50px;
 }
 
-.wallFeed .feedText {
+.wallPost .feedText {
     text-align: justify;
     padding: 0px 10px 15px;
     line-height: 1.6;

@@ -60,7 +60,11 @@ function renderPage(appHtml) {
       +   '<div id=app>${appHtml}</div>'
       +   '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>'
       +   '<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>'
-      +   '<script src="/bundle.js"></script>';
+      +   "<script src='jquery.ui.widget.js' type='text/javascript'></script>"
+      +   "<script src='jquery.iframe-transport.js' type='text/javascript'></script>"
+      +   "<script src='jquery.fileupload.js' type='text/javascript'></script>"
+      +   "<script src='jquery.cloudinary.js' type='text/javascript'></script>"
+      +   "<script src='/bundle.js'></script>";
 };
 
 

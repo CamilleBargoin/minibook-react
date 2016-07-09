@@ -5,11 +5,108 @@ var UserService = {
 
     get: function(userId, callback) {
 
+        const payload = {
+            sessionId: localStorage.getItem("sessionId")
+        };
+
+        this.getHTTPRequest(config[process.env.NODE_ENV].api + '/users/' + userId, payload, callback);
+    },
+
+    getAll: function(callback) {
+
+        const payload = {
+          sessionId: localStorage.getItem('sessionId')
+        };
+
+        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/all', payload, callback);
+    },
+
+    getFriends: function(userId, callback) {
+
+        const payload = {
+          userId: userId, 
+          sessionId: localStorage.getItem('sessionId')
+        };
+
+        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/friends', payload, callback);
+    },
+
+    update: function(userId, fields, callback) {
+
+        const payload = {
+          userId: userId, 
+          sessionId: localStorage.getItem('sessionId'),
+          updatedFields: fields
+        };
+
+        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/update', payload, callback);
+    },
+
+
+    search: function(string, callback) {
+
+        const payload = {
+            string: string,
+            sessionId: localStorage.getItem('sessionId')
+        }
+
+        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/search', payload, callback);
+    },
+
+    sendInvite: function(user, callback) {
+
+
+        const payload = {
+            sessionId: localStorage.getItem('sessionId'),
+            userId: user._id
+        };
+
+        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/invite', payload, callback);
+    },
+
+    befriend: function(newFriendId, callback) {
+
+        const payload = {
+            sessionId: localStorage.getItem('sessionId'),
+            friendId: newFriendId
+        };
+
+        this.postHTTPRequest(config[process.env.NODE_ENV].api + '/users/befriend', payload, callback);
+    },
+
+    postHTTPRequest: function(url, payload, callback) {
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            // post payload:
+            data: JSON.stringify(payload),
+            dataType: 'json',
+            contentType: "application/json",
+            success: function(data, status, jqXHR) {
+
+
+                if (data.error) {
+                    Materialize.toast(data.error, 3000, 'toastError');
+                }
+                else {
+                    if (callback)
+                        callback(data);
+                }
+            },
+            error: function(jqXHR, status, error) {
+              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+            }
+        }); 
+    },
+
+    getHTTPRequest: function(url, payload, callback) {
+
 
         $.ajax({
             method: "GET",
-              url: config[process.env.NODE_ENV].api + '/users/' + userId,
-              data: {sessionId: localStorage.getItem("sessionId")},
+              url: url,
+              data: payload,
               success: function(data, status) {
 
                 if (callback)
@@ -20,225 +117,9 @@ var UserService = {
                 Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
               }
         });
-    },
-
-    getFriends: function(userId, callback) {
-
-        var payload = {
-          userId: userId, 
-          sessionId: localStorage.getItem('sessionId')
-        };
-
-        $.ajax({
-            type: 'POST',
-            url: config[process.env.NODE_ENV].api + '/users/friends',
-            // post payload:
-            data: JSON.stringify(payload),
-            dataType: 'json',
-            contentType: "application/json",
-            success: function(data, status, jqXHR) {
 
 
-                if (data.error) {
-                    Materialize.toast(data.error, 3000, 'toastError');
-                }
-                else {
-                    if (callback)
-                        callback(data);
-                }
-            },
-            error: function(jqXHR, status, error) {
-              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-            }
-
-        }); 
-
-
-    },
-
-    update: function(userId, fields, callback) {
-
-        var payload = {
-          userId: userId, 
-          sessionId: localStorage.getItem('sessionId'),
-          updatedFields: fields
-        };
-
-        $.ajax({
-            type: 'POST',
-            url: config[process.env.NODE_ENV].api + '/users/update',
-            // post payload:
-            data: JSON.stringify(payload),
-            dataType: 'json',
-            contentType: "application/json",
-            success: function(data, status, jqXHR) {
-
-
-                if (data.error) {
-                    Materialize.toast(data.error, 3000, 'toastError');
-                }
-                else {
-                    if (callback)
-                        callback();
-                }
-            },
-            error: function(jqXHR, status, error) {
-              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-            }
-
-        }); 
-
-    },
-
-    search: function(string, callback) {
-        const payload = {
-            string: string,
-            sessionId: localStorage.getItem('sessionId')
-        }
-
-        $.ajax({
-            type: 'POST',
-            url: config[process.env.NODE_ENV].api + '/users/search',
-            data: JSON.stringify(payload),
-            dataType: 'json',
-            contentType: "application/json",
-            success: function(data, status, jqXHR) {
-
-                if (data.error) {
-                    Materialize.toast(data.error, 3000, 'toastError');
-                }
-                else {
-                    if (callback)
-                        callback(data);
-                }
-            },
-            error: function(jqXHR, status, error) {
-              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-            }
-
-        }); 
-    },
-
-    sendInvite: function(user, callback) {
-
-
-        var payload = {
-            sessionId: localStorage.getItem('sessionId'),
-            userId: user._id
-        };
-
-        $.ajax({
-            type: "POST",
-            url: config[process.env.NODE_ENV].api + '/users/invite',
-            data: JSON.stringify(payload),
-            dataType: 'json',
-            contentType: "application/json",
-            success: function(data, status, jqXHR) {
-
-                if (data.error) {
-                    Materialize.toast(data.error, 3000, 'toastError');
-                }
-                else {
-                    if (callback)
-                        callback(data);
-                }
-            },
-            error: function(jqXHR, status, error) {
-              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-            }
-        });
-    },
-
-    getRequests: function(callback) {
-
-
-        var payload = {
-            sessionId: localStorage.getItem('sessionId')
-        };
-
-        $.ajax({
-            type: "POST",
-            url: config[process.env.NODE_ENV].api + '/users/requests',
-            data: JSON.stringify(payload),
-            dataType: 'json',
-            contentType: "application/json",
-            success: function(data, status, jqXHR) {
-                if (data.error) {
-                    Materialize.toast(data.error, 3000, 'toastError');
-                }
-                else {
-                    if (callback)
-                        callback(data);
-                }
-            },
-            error: function(jqXHR, status, error) {
-              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-            }
-        })
-
-
-    },
-
-    befriend: function(newFriendId, callback) {
-
-        var payload = {
-            sessionId: localStorage.getItem('sessionId'),
-            friendId: newFriendId
-        };
-
-        $.ajax({
-            type: "POST",
-            url: config[process.env.NODE_ENV].api + '/users/befriend',
-            data: JSON.stringify(payload),
-            dataType: 'json',
-            contentType: "application/json",
-            success: function(data, status, jqXHR) {
-                if (data.error) {
-                    Materialize.toast(data.error, 3000, 'toastError');
-                }
-                else {
-
-                    if (callback)
-                        callback(data);
-                }
-            },
-            error: function(jqXHR, status, error) {
-              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-            }
-        });
-
-    },
-
-    deleteRequest: function(requestId, callback) {
-
-        var payload = {
-            sessionId: localStorage.getItem('sessionId'),
-            requestId: requestId
-        };
-
-
-        $.ajax({
-            type: "POST",
-            url: config[process.env.NODE_ENV].api + '/users/deleteRequest',
-            data: JSON.stringify(payload),
-            dataType: 'json',
-            contentType: "application/json",
-            success: function(data, status, jqXHR) {
-                if (data.error) {
-                    Materialize.toast(data.error, 3000, 'toastError');
-                }
-                else {
-
-                    if (callback)
-                        callback(data);
-                }
-            },
-            error: function(jqXHR, status, error) {
-              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
-            }
-        });
-    },
-
+    }
 };
 
 

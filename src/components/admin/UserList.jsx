@@ -12,6 +12,8 @@ var UserList = React.createClass({
 
   render() {
 
+    console.log(this.props.users);
+
 
     var userLines = this.props.users.map(function(user, i) {
       return (
@@ -21,6 +23,9 @@ var UserList = React.createClass({
 
     return (
       <div id="userList">
+
+          <h1>Liste des utilisateurs</h1>
+
          <ul className="collection hoverable">
           {userLines}
         </ul>

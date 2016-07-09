@@ -11,3 +11,7 @@ Lancer l'app en mode dev:
 
 Afficher l'environnement:
       $ echo %NODE_ENV%
+
+
+Build:
+      $ npm run build

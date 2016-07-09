@@ -19,28 +19,27 @@ var NavBarRequests = React.createClass({
     acceptRequest(index, e) {
         e.stopPropagation();
 
-        let requests = this.state.requests;
+        var requests = this.state.requests;
 
         const request = this.state.requests[index];
         const self = this;
 
-        console.log(request);
+        UserService.befriend(request.user._id, function(err, result) {
 
+            if (err) {
 
-        // UserService.befriend(request.from, function(e) {
-        //     UserService.deleteRequest(request._id, function(e) {
+            }
+            else {
 
-        //         requests = requests.splice(index, 1);
-        //         self.setState({
-        //             requests: requests
-        //         });
-
-        //     });
-        // });
+                // var t = requests.splice(index, 1);
+                
+                // self.props.updateRequests(requests.splice(index, 1));
+                self.props.refresh('user');
+            }
+        });
     },
 
     render() {
-
 
         const self = this;
 
@@ -51,13 +50,11 @@ var NavBarRequests = React.createClass({
 
             return <li key={index} href="#!" className="collection-item requests-item">
                         {fromFullname}
-                        <a className="btn-floating" onClick={self.acceptRequest.bind(this, index)} >
+                        <a className="btn-floating" onClick={self.acceptRequest.bind(null, index)} >
                             <i  className="material-icons">add</i>
                         </a>
                     </li>
         });
-
-        console.log(this.state.requests);
 
         return (
             <div className="requestsList">

@@ -2,40 +2,57 @@ var React = require('react');
 var NavBar = require('../navbar/NavBar.jsx');
 var UserList = require('./UserList.jsx');
 var Stats = require('./Stats.jsx');
+var UserService = require('../../services/UserService.jsx');
 
 var Admin = React.createClass({
 
   getInitialState() {
     return {
-    
+      users: []
     };
   },
 
 
   componentDidMount() {
       $('#adminTabs ul.tabs').tabs();  
+
+      this.getUsers();
   },
 
+
+  getUsers() {
+
+    const self = this;
+    UserService.getAll(function(users) {
+        self.setState({
+          users: users
+        });
+    });
+
+  },
   
 
   render() {
 
-    var users = [
-      {name: "Chuck Norris"},
-      {name: "Jean CLaude VanDamme"},
-      {name: "Steven Seagal"},
-      {name: "Kurt Russel"},
-      {name: "Jon Snow"},
-      {name: "Beyonce"},
-      {name: "John Rambo"},
-      {name: "Chuck Norris"},
-      {name: "Jean CLaude VanDamme"},
-      {name: "Steven Seagal"},
-      {name: "Kurt Russel"},
-      {name: "Jon Snow"},
-      {name: "Beyonce"},
-      {name: "John Rambo"}
-    ];
+    // var users = [
+    //   {name: "Chuck Norris"},
+    //   {name: "Jean CLaude VanDamme"},
+    //   {name: "Steven Seagal"},
+    //   {name: "Kurt Russel"},
+    //   {name: "Jon Snow"},
+    //   {name: "Beyonce"},
+    //   {name: "John Rambo"},
+    //   {name: "Chuck Norris"},
+    //   {name: "Jean CLaude VanDamme"},
+    //   {name: "Steven Seagal"},
+    //   {name: "Kurt Russel"},
+    //   {name: "Jon Snow"},
+    //   {name: "Beyonce"},
+    //   {name: "John Rambo"}
+    // ];
+    // 
+    
+    var users = this.state.users;
 
     return (
       <div>

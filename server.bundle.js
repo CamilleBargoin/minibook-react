@@ -85,7 +85,7 @@
 	});
 
 	function renderPage(appHtml) {
-	  return '<!doctype html public="storage">' + '<html>' + '<meta charset=utf-8/>' + '<meta http-equiv="x-ua-compatible" content="ie=edge">' + '<meta name="viewport" content="width=device-width, initial-scale=1">' + '<link rel="stylesheet" type="text/css" href="main.css">' + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">' + '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">' + '<title>My First React Router App</title>' + '<div id=app>${appHtml}</div>' + '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>' + '<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>' + '<script src="/bundle.js"></script>';
+	  return '<!doctype html public="storage">' + '<html>' + '<meta charset=utf-8/>' + '<meta http-equiv="x-ua-compatible" content="ie=edge">' + '<meta name="viewport" content="width=device-width, initial-scale=1">' + '<link rel="stylesheet" type="text/css" href="main.css">' + '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">' + '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">' + '<title>My First React Router App</title>' + '<div id=app>${appHtml}</div>' + '<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>' + '<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>' + "<script src='jquery.ui.widget.js' type='text/javascript'></script>" + "<script src='jquery.iframe-transport.js' type='text/javascript'></script>" + "<script src='jquery.fileupload.js' type='text/javascript'></script>" + "<script src='jquery.cloudinary.js' type='text/javascript'></script>" + "<script src='/bundle.js'></script>";
 	};
 
 	var PORT = process.env.PORT || 8080;
@@ -151,34 +151,36 @@
 	// var TodosApp = require("./components/TodosApp.jsx");
 	var Users = __webpack_require__(7);
 	var Landing = __webpack_require__(9);
-	var App = __webpack_require__(14);
+	var App = __webpack_require__(15);
 
-	var Home = __webpack_require__(15);
-	var UserProfile = __webpack_require__(23);
-	var Inbox = __webpack_require__(34);
-	var Admin = __webpack_require__(39);
+	var Home = __webpack_require__(16);
+	var UserProfile = __webpack_require__(27);
+	var Inbox = __webpack_require__(39);
+	var Admin = __webpack_require__(44);
+	var Logout = __webpack_require__(48);
 
 	var auth = __webpack_require__(11);
 
 	module.exports = React.createElement(
-	  Route,
-	  { path: '/', component: App },
-	  React.createElement(IndexRoute, { component: Landing }),
-	  React.createElement(Route, { path: '/users', component: Users }),
-	  React.createElement(Route, { path: '/home', component: Home, onEnter: requireAuth }),
-	  React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireAuth }),
-	  React.createElement(Route, { path: '/profile/:username', component: UserProfile, onEnter: requireAuth }),
-	  React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireAuth }),
-	  React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireAuth })
+	    Route,
+	    { path: '/', component: App },
+	    React.createElement(IndexRoute, { component: Landing }),
+	    React.createElement(Route, { path: '/home', component: Home, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/profile/:id', component: UserProfile, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/logout', component: Logout })
 	);
 
-	function requireAuth(nextState, replace) {
-	  if (!auth.loggedIn()) {
-	    replace({
-	      pathname: '/',
-	      state: { nextPathname: nextState.location.pathname }
+	function requireCredentials(nextState, replace, next) {
+
+	    auth.loggedIn(function () {
+	        next();
+	    }, function () {
+	        replace("/");
+	        next();
 	    });
-	  }
 	}
 
 /***/ },
@@ -247,7 +249,7 @@
 
 	var React = __webpack_require__(3);
 	var LoginBox = __webpack_require__(10);
-	var RegisterBox = __webpack_require__(13);
+	var RegisterBox = __webpack_require__(14);
 
 	var Landing = React.createClass({
 	  displayName: 'Landing',
@@ -349,11 +351,9 @@
 	    console.log("login action");
 
 	    Auth.login(this.state.email, this.state.password, function () {
-	      alert("YEAH");
 	      console.log(window.document.cookie);
+	      browserHistory.push('/home');
 	    });
-
-	    // browserHistory.push('/home');
 	  },
 	  render: function render() {
 	    return React.createElement(
@@ -378,7 +378,7 @@
 	          React.createElement(
 	            'div',
 	            { className: 'input-field col s12' },
-	            React.createElement('input', { id: 'password', name: 'password', type: 'text', className: 'validate', onChange: this.updateField }),
+	            React.createElement('input', { id: 'password', type: 'password', name: 'password', className: 'validate', onChange: this.updateField }),
 	            React.createElement(
 	              'label',
 	              { 'for': 'password' },
@@ -410,20 +410,32 @@
 
 	var $ = __webpack_require__(12);
 
+	var config = __webpack_require__(13);
+
 	var AuthService = {
 
-	  loggedIn: function loggedIn() {
+	  loggedIn: function loggedIn(_success, error) {
+
 	    if (Storage) {
 	      $.ajax({
 	        method: "GET",
-	        url: 'http://localhost:3000/users/secure',
+	        url: config[process.env.NODE_ENV].api + '/users/secure',
 	        data: { sessionId: localStorage.getItem("sessionId") },
 	        success: function success(data, status) {
 
-	          console.log(data);
+	          if (data.success) {
+	            console.log("loggedIn success");
+	            console.log(data);
+	            _success();
+	          } else {
+	            console.log(data);
+	            error();
+	          }
 	        },
 	        error: function error(jqXHR, status, _error) {
+	          console.log("loggedIn error");
 	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	          _error();
 	        }
 
 	      });
@@ -431,13 +443,12 @@
 	  },
 
 	  login: function login(email, password, callback) {
-	    console.log(process.env);
 
 	    if (Storage) {
-
+	      console.log(config[process.env.NODE_ENV].api);
 	      $.ajax({
 	        type: 'POST',
-	        url: 'http://localhost:3000/users/login',
+	        url: config[process.env.NODE_ENV].api + '/users/login',
 	        // post payload:
 	        data: JSON.stringify({ email: email, password: password }),
 	        dataType: 'json',
@@ -452,11 +463,38 @@
 	            Materialize.toast("Loggé avec succès", 2000, 'toastSuccess', function () {
 
 	              localStorage.setItem('sessionId', data.sessionId);
+	              localStorage.setItem('userId', data.userId);
 	              callback();
 	            });
 	          }
 	        },
 	        error: function error(jqXHR, status, _error2) {
+	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	        }
+
+	      });
+	    }
+	  },
+
+	  logout: function logout(callback) {
+
+	    console.log("LOGOUT");
+
+	    if (Storage) {
+	      $.ajax({
+	        method: "GET",
+	        url: config[process.env.NODE_ENV].api + '/users/logout',
+	        data: { sessionId: localStorage.getItem("sessionId") },
+	        success: function success(data, status) {
+	          console.log("logout success");
+
+	          if (data.success) {
+	            localStorage.setItem("sessionId", "");
+	            callback();
+	          }
+	        },
+	        error: function error(jqXHR, status, _error3) {
+	          console.log("logout error");
 	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	        }
 
@@ -475,12 +513,29 @@
 
 /***/ },
 /* 13 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	module.exports = {
+	    "production": {
+	        "api": "https://minibook-express.herokuapp.com"
+	    },
+	    "development": {
+	        "api": "http://localhost:3000"
+	    }
+	};
+
+/***/ },
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
 	var browserHistory = __webpack_require__(5).browserHistory;
+	var config = __webpack_require__(13);
+	var Auth = __webpack_require__(11);
 
 	var RegisterBox = React.createClass({
 	  displayName: 'RegisterBox',
@@ -492,17 +547,17 @@
 	    e.preventDefault();
 
 	    var newUser = {
-	      firstName: this.refs.firstname.value,
-	      lastName: this.refs.lastname.value,
-	      email: this.refs.email.value,
-	      password: this.refs.password.value
+	      firstname: this.refs['firstname'].value,
+	      lastname: this.refs['lastname'].value,
+	      email: this.refs['email'].value,
+	      password: this.refs['password'].value
 	    };
 
 	    console.log(newUser);
 
 	    $.ajax({
 	      type: 'POST',
-	      url: 'http://localhost:3000/users/register',
+	      url: config[process.env.NODE_ENV].api + '/users/register',
 	      // post payload:
 	      data: JSON.stringify(newUser),
 	      dataType: 'json',
@@ -515,8 +570,10 @@
 	        } else {
 
 	          Materialize.toast("Ton compte vient d'être créé!", 2000, 'toastSuccess', function () {
-	            req.session.test = "ceciestuntest";
-	            browserHistory.push('/home');
+	            //req.session.test = "ceciestuntest";
+	            Auth.login(newUser.email, newUser.password, function () {
+	              browserHistory.push('/home');
+	            });
 	          });
 	        }
 	      },
@@ -604,7 +661,7 @@
 	module.exports = RegisterBox;
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -616,11 +673,10 @@
 	var App = React.createClass({
 	  displayName: 'App',
 	  getInitialState: function getInitialState() {
-	    return {
-	      test: "test"
-	    };
+	    return {};
 	  },
 	  render: function render() {
+
 	    return React.createElement(
 	      'div',
 	      { style: { height: "100%" } },
@@ -632,24 +688,45 @@
 	module.exports = App;
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(16);
-	var Footer = __webpack_require__(18);
-	var FriendsGrid = __webpack_require__(19);
+	var NavBar = __webpack_require__(17);
+	var Footer = __webpack_require__(22);
+	var FriendsGrid = __webpack_require__(23);
+	var UserService = __webpack_require__(19);
 
-	var Chat = __webpack_require__(21);
+	var Chat = __webpack_require__(25);
 
 	var Home = React.createClass({
 	  displayName: 'Home',
 	  getInitialState: function getInitialState() {
 	    return {
-	      chat: null
+	      chat: null,
+	      user: null
 	    };
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.getUser();
+	  },
+	  refreshState: function refreshState(stateProperty) {
+	    switch (stateProperty) {
+
+	      case 'user':
+	        this.getUser();
+
+	    }
+	  },
+	  getUser: function getUser() {
+	    var self = this;
+	    UserService.get(localStorage.getItem('userId'), function (user) {
+	      self.setState({
+	        user: user
+	      });
+	    });
 	  },
 	  openChat: function openChat() {
 	    this.setState({
@@ -670,8 +747,8 @@
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(NavBar, { openChat: this.openChat, search: 'true' }),
-	      React.createElement(FriendsGrid, null),
+	      React.createElement(NavBar, { openChat: this.openChat, search: 'true', user: this.state.user, refresh: this.refreshState }),
+	      React.createElement(FriendsGrid, { user: this.state.user }),
 	      chat
 	    );
 	  }
@@ -680,24 +757,67 @@
 	module.exports = Home;
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var UserSearch = __webpack_require__(17);
+	var NavBarSearch = __webpack_require__(18);
+	var UserService = __webpack_require__(19);
+
+	var NavBarRequests = __webpack_require__(21);
 
 	var NavBar = React.createClass({
 	  displayName: 'NavBar',
+
+
+	  requests: [],
+
 	  getInitialState: function getInitialState() {
-	    return {};
+	    return {
+	      user: this.props.user,
+	      showRequests: false
+	    };
 	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.setState({
+	      user: nextProps.user
+	    }, function () {
+
+	      if (this.state.user && this.state.user.friends) {
+
+	        this.requests = [];
+
+	        for (var i = 0; i < this.state.user.friends.length; i++) {
+
+	          var currentUser = this.state.user.friends[i];
+	          if (this.state.user.friends[i].status == "pending") this.requests.push(this.state.user.friends[i]);
+	        }
+
+	        this.forceUpdate();
+	      }
+	    });
+	  },
+	  componentDidMount: function componentDidMount() {},
+	  componentWillMount: function componentWillMount() {},
 	  searchUser: function searchUser(e) {
 	    e.preventDefault();
 	    alert(this.refs["userInput"].value);
 	  },
+	  showRequests: function showRequests() {
+
+	    if (this.requests && this.requests.length > 0) {
+	      this.setState({
+	        showRequests: !this.state.showRequests
+	      });
+	    }
+	  },
 	  render: function render() {
+
+	    var display = this.requests.length > 0 ? { display: "block" } : { display: "none" };
+
+	    var requestsList = this.state.showRequests ? React.createElement(NavBarRequests, { requests: this.requests, refresh: this.props.refresh }) : React.createElement('div', null);
 
 	    return React.createElement(
 	      'div',
@@ -709,17 +829,26 @@
 	          'div',
 	          { className: 'nav-wrapper' },
 	          React.createElement(
-	            'a',
-	            { href: '/home', className: 'brand-logo' },
-	            'minibook'
-	          ),
-	          React.createElement(
 	            'div',
 	            { className: 'center' },
-	            React.createElement(UserSearch, null),
+	            React.createElement(
+	              'a',
+	              { href: '/home', className: 'brand-logo' },
+	              'minibook'
+	            ),
+	            React.createElement(NavBarSearch, null),
 	            React.createElement(
 	              'ul',
 	              { className: 'hide-on-med-and-down', style: { position: "absolute", top: 0, right: 0 } },
+	              React.createElement(
+	                'li',
+	                null,
+	                React.createElement(
+	                  'a',
+	                  { href: '/logout' },
+	                  'logout'
+	                )
+	              ),
 	              React.createElement(
 	                'li',
 	                null,
@@ -734,8 +863,26 @@
 	                null,
 	                React.createElement(
 	                  'a',
-	                  { href: '/profile' },
+	                  { href: "/profile/" + localStorage.getItem('userId') },
 	                  'Mon profil'
+	                )
+	              ),
+	              React.createElement(
+	                'li',
+	                { style: { position: "relative" } },
+	                React.createElement(
+	                  'a',
+	                  null,
+	                  React.createElement(
+	                    'i',
+	                    { onClick: this.showRequests, className: 'material-icons' },
+	                    'group'
+	                  ),
+	                  React.createElement(
+	                    'div',
+	                    { style: display, className: 'requestsBadge' },
+	                    this.requests.length
+	                  )
 	                )
 	              ),
 	              React.createElement(
@@ -754,7 +901,8 @@
 	            )
 	          )
 	        )
-	      )
+	      ),
+	      requestsList
 	    );
 	  }
 	});
@@ -762,87 +910,36 @@
 	module.exports = NavBar;
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
+	var UserService = __webpack_require__(19);
+	var NavBarSearchItem = __webpack_require__(20);
 
-	var userList = [{
-	  firstname: "albert",
-	  lastname: "King",
-	  color: "#47B8E0"
-	}, {
-	  firstname: "Bertrand",
-	  lastname: "Forest",
-	  color: "#FFC952"
-	}, {
-	  firstname: "Camille",
-	  lastname: "Blue",
-	  color: "#FF7473"
-	}, {
-	  firstname: "Donald",
-	  lastname: "Smith",
-	  color: "#47B8E0"
-	}, {
-	  firstname: "Etienne",
-	  lastname: "Williamson",
-	  color: "#FFC952"
-	}, {
-	  firstname: "Francois",
-	  lastname: "Rivers",
-	  color: "#FF7473"
-	}, {
-	  firstname: "Gertrude",
-	  lastname: "Star",
-	  color: "#47B8E0"
-	}, {
-	  firstname: "Henry",
-	  lastname: "Bear",
-	  color: "#FFC952"
-	}, {
-	  firstname: "Igor",
-	  lastname: "Miller",
-	  color: "#FF7473"
-	}, {
-	  firstname: "Janine",
-	  lastname: "Paulson",
-	  color: "#47B8E0"
-	}, {
-	  firstname: "Kamel",
-	  lastname: "Frey",
-	  color: "#FFC952"
-	}, {
-	  firstname: "Léonidas",
-	  lastname: "Silver",
-	  color: "#FF7473"
-	}];
-
-	var FindUser = React.createClass({
-	  displayName: "FindUser",
+	var NavBarSearch = React.createClass({
+	  displayName: "NavBarSearch",
 	  getInitialState: function getInitialState() {
 	    return {
 	      suggestions: []
 	    };
 	  },
-	  findUsers: function findUsers(string, callback) {
-	    var stringLow = string.toLowerCase();
-	    var result = [];
-	    userList.map(function (user, key) {
-	      if (user.firstname.toLowerCase().startsWith(stringLow) || user.lastname.toLowerCase().startsWith(stringLow)) result.push(user);
-	    });
-
-	    callback(result);
-	  },
 	  onChange: function onChange(e) {
 	    var that = this;
 	    var input = this.refs["userInput"].value;
-	    if (input && input != "") {
-	      this.findUsers(this.refs["userInput"].value, function (result) {
-	        that.setState({
-	          suggestions: result
-	        });
+
+	    if (input && input != "" && input.length > 1) {
+
+	      UserService.search(this.refs["userInput"].value, function (result) {
+
+	        console.log(result);
+	        if (result) {
+	          that.setState({
+	            suggestions: result.users
+	          });
+	        }
 	      });
 	    } else {
 	      that.setState({
@@ -858,13 +955,9 @@
 	    var that = this;
 	    var displayUserSuggestions = this.state.suggestions.length > 0 ? "block" : "none";
 	    var userSuggestions = this.state.suggestions.map(function (user, key) {
-	      return React.createElement(
-	        "li",
-	        { className: "collection-item", onClick: that.selectUser, key: key },
-	        user.firstname,
-	        " ",
-	        user.lastname
-	      );
+	      // return (<li className="collection-item"  onClick={that.selectUser} key={key}>{user.firstname} {user.lastname}</li>)
+
+	      return React.createElement(NavBarSearchItem, { user: user, key: key });
 	    });
 
 	    return React.createElement(
@@ -884,10 +977,356 @@
 	  }
 	});
 
-	module.exports = FindUser;
+	module.exports = NavBarSearch;
 
 /***/ },
-/* 18 */
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var config = __webpack_require__(13);
+
+	var UserService = {
+
+	    get: function get(userId, callback) {
+
+	        $.ajax({
+	            method: "GET",
+	            url: config[process.env.NODE_ENV].api + '/users/' + userId,
+	            data: { sessionId: localStorage.getItem("sessionId") },
+	            success: function success(data, status) {
+
+	                if (callback) callback(data);
+	            },
+	            error: function error(jqXHR, status, _error) {
+	                console.log("find user by id error");
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    },
+
+	    getFriends: function getFriends(userId, callback) {
+
+	        var payload = {
+	            userId: userId,
+	            sessionId: localStorage.getItem('sessionId')
+	        };
+
+	        $.ajax({
+	            type: 'POST',
+	            url: config[process.env.NODE_ENV].api + '/users/friends',
+	            // post payload:
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+
+	                if (data.error) {
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    if (callback) callback(data);
+	                }
+	            },
+	            error: function error(jqXHR, status, _error2) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+
+	        });
+	    },
+
+	    update: function update(userId, fields, callback) {
+
+	        var payload = {
+	            userId: userId,
+	            sessionId: localStorage.getItem('sessionId'),
+	            updatedFields: fields
+	        };
+
+	        $.ajax({
+	            type: 'POST',
+	            url: config[process.env.NODE_ENV].api + '/users/update',
+	            // post payload:
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+
+	                if (data.error) {
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    if (callback) callback();
+	                }
+	            },
+	            error: function error(jqXHR, status, _error3) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+
+	        });
+	    },
+
+	    search: function search(string, callback) {
+	        var payload = {
+	            string: string,
+	            sessionId: localStorage.getItem('sessionId')
+	        };
+
+	        $.ajax({
+	            type: 'POST',
+	            url: config[process.env.NODE_ENV].api + '/users/search',
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+
+	                if (data.error) {
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    if (callback) callback(data);
+	                }
+	            },
+	            error: function error(jqXHR, status, _error4) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+
+	        });
+	    },
+
+	    sendInvite: function sendInvite(user, callback) {
+
+	        var payload = {
+	            sessionId: localStorage.getItem('sessionId'),
+	            userId: user._id
+	        };
+
+	        $.ajax({
+	            type: "POST",
+	            url: config[process.env.NODE_ENV].api + '/users/invite',
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+
+	                if (data.error) {
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    if (callback) callback(data);
+	                }
+	            },
+	            error: function error(jqXHR, status, _error5) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    },
+
+	    getRequests: function getRequests(callback) {
+
+	        var payload = {
+	            sessionId: localStorage.getItem('sessionId')
+	        };
+
+	        $.ajax({
+	            type: "POST",
+	            url: config[process.env.NODE_ENV].api + '/users/requests',
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+	                if (data.error) {
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    if (callback) callback(data);
+	                }
+	            },
+	            error: function error(jqXHR, status, _error6) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    },
+
+	    befriend: function befriend(newFriendId, callback) {
+
+	        var payload = {
+	            sessionId: localStorage.getItem('sessionId'),
+	            friendId: newFriendId
+	        };
+
+	        console.log(payload);
+
+	        $.ajax({
+	            type: "POST",
+	            url: config[process.env.NODE_ENV].api + '/users/befriend',
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+	                if (data.error) {
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+
+	                    if (callback) callback(null, data);
+	                }
+	            },
+	            error: function error(jqXHR, status, _error7) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    },
+
+	    deleteRequest: function deleteRequest(requestId, callback) {
+
+	        var payload = {
+	            sessionId: localStorage.getItem('sessionId'),
+	            requestId: requestId
+	        };
+
+	        $.ajax({
+	            type: "POST",
+	            url: config[process.env.NODE_ENV].api + '/users/deleteRequest',
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+	                if (data.error) {
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+
+	                    if (callback) callback(data);
+	                }
+	            },
+	            error: function error(jqXHR, status, _error8) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    }
+
+	};
+
+	module.exports = UserService;
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(3);
+	var UserService = __webpack_require__(19);
+
+	var NavBarSearchItem = React.createClass({
+	  displayName: "NavBarSearchItem",
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  selectUser: function selectUser(e) {
+	    console.log(e.currentTarget);
+	  },
+	  clickButton: function clickButton(e) {
+	    e.stopPropagation();
+	    UserService.sendInvite(this.props.user, function () {
+	      Materialize.toast("Demande d'ami envoyée !", 3000, 'toastSuccess');
+	    });
+	  },
+	  render: function render() {
+
+	    return React.createElement(
+	      "li",
+	      { className: "collection-item", onClick: this.selectUser },
+	      this.props.user.firstname,
+	      " ",
+	      this.props.user.lastname,
+	      React.createElement(
+	        "i",
+	        { onClick: this.clickButton, className: "material-icons send-invite-icon" },
+	        "person_add"
+	      )
+	    );
+	  }
+	});
+
+	module.exports = NavBarSearchItem;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var UserService = __webpack_require__(19);
+
+	var NavBarRequests = React.createClass({
+	    displayName: 'NavBarRequests',
+	    getInitialState: function getInitialState() {
+	        return {
+	            requests: this.props.requests
+	        };
+	    },
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	        this.setState({
+	            requests: nextProps.requests
+	        });
+	    },
+	    acceptRequest: function acceptRequest(index, e) {
+	        e.stopPropagation();
+
+	        var requests = this.state.requests;
+
+	        var request = this.state.requests[index];
+	        var self = this;
+
+	        UserService.befriend(request.user._id, function (err, result) {
+
+	            if (err) {} else {
+
+	                // var t = requests.splice(index, 1);
+
+	                // self.props.updateRequests(requests.splice(index, 1));
+	                self.props.refresh('user');
+	            }
+	        });
+	    },
+	    render: function render() {
+
+	        var self = this;
+
+	        var requestsItems = this.state.requests.map(function (request, index) {
+
+	            var requestFrom = request.user;
+	            var fromFullname = requestFrom.firstname + " " + requestFrom.lastname;
+
+	            return React.createElement(
+	                'li',
+	                { key: index, href: '#!', className: 'collection-item requests-item' },
+	                fromFullname,
+	                React.createElement(
+	                    'a',
+	                    { className: 'btn-floating', onClick: self.acceptRequest.bind(null, index) },
+	                    React.createElement(
+	                        'i',
+	                        { className: 'material-icons' },
+	                        'add'
+	                    )
+	                )
+	            );
+	        });
+
+	        return React.createElement(
+	            'div',
+	            { className: 'requestsList' },
+	            React.createElement(
+	                'ul',
+	                { className: 'collection' },
+	                requestsItems
+	            )
+	        );
+	    }
+	});
+
+	module.exports = NavBarRequests;
+
+/***/ },
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -995,106 +1434,42 @@
 	module.exports = Footer;
 
 /***/ },
-/* 19 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendBox = __webpack_require__(20);
+	var FriendBox = __webpack_require__(24);
+	var UserService = __webpack_require__(19);
 
 	var FriendBoxContainer = React.createClass({
 	  displayName: 'FriendBoxContainer',
 	  getInitialState: function getInitialState() {
-	    return {};
+	    if (this.props.user) {
+	      return {
+	        friendships: this.props.user.friends || []
+	      };
+	    }
+
+	    return {
+	      friendships: []
+	    };
 	  },
-	  componentDidMount: function componentDidMount() {
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.setState({
+	      friendships: nextProps.user.friends || []
+	    });
+	  },
+	  componentDidUpdate: function componentDidUpdate() {
 	    $('.friendBox.tooltipped').tooltip({ delay: 50 });
 	  },
 	  render: function render() {
 
-	    var friends = [{
-	      name: "albert",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Bertrand",
-	      color: "#FFC952"
-	    }, {
-	      name: "Camille",
-	      color: "#FF7473"
-	    }, {
-	      name: "Donald",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Etienne",
-	      color: "#FFC952"
-	    }, {
-	      name: "Francois",
-	      color: "#FF7473"
-	    }, {
-	      name: "Gertrude",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Henry",
-	      color: "#FFC952"
-	    }, {
-	      name: "Igor",
-	      color: "#FF7473"
-	    }, {
-	      name: "Janine",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Kamel",
-	      color: "#FFC952"
-	    }, {
-	      name: "Léonidas",
-	      color: "#FF7473"
-	    }, {
-	      name: "Marine",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Noël",
-	      color: "#FFC952"
-	    }, {
-	      name: "Ophélie",
-	      color: "#FF7473"
-	    }, {
-	      name: "Patrick",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Quiburn",
-	      color: "#FFC952"
-	    }, {
-	      name: "Rahan",
-	      color: "#FF7473"
-	    }, {
-	      name: "Sylvain",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Théodore",
-	      color: "#FFC952"
-	    }, {
-	      name: "Ursula",
-	      color: "#FF7473"
-	    }, {
-	      name: "Voldemort",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Wanda",
-	      color: "#FFC952"
-	    }, {
-	      name: "Xavier",
-	      color: "#FF7473"
-	    }, {
-	      name: "Yvette",
-	      color: "#47B8E0"
-	    }, {
-	      name: "Zoé",
-	      color: "#FFC952"
-	    }];
-
-	    var friendBoxes = friends.map(function (friend, i) {
-	      return React.createElement(FriendBox, { name: friend.name, key: i, color: friend.color });
+	    var friendBoxes = this.state.friendships.map(function (friendship, i) {
+	      if (friendship.status == "accepted") {
+	        return React.createElement(FriendBox, { friendship: friendship, key: i });
+	      }
 	    });
 
 	    var width = Math.floor($(document).width() / 164) * 164 + "px";
@@ -1105,8 +1480,6 @@
 	      React.createElement(
 	        'div',
 	        { style: { display: "flex", flexWrap: "wrap", width: width, margin: "0 auto" } },
-	        friendBoxes,
-	        friendBoxes,
 	        friendBoxes
 	      )
 	    );
@@ -1116,7 +1489,7 @@
 	module.exports = FriendBoxContainer;
 
 /***/ },
-/* 20 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1128,19 +1501,32 @@
 	  displayName: 'FriendBox',
 	  componentDidMount: function componentDidMount() {},
 	  openFriendProfile: function openFriendProfile() {
-
-	    browserHistory.push('/profile/' + this.props.name);
+	    $('.friendBox.tooltipped').tooltip("remove");
+	    browserHistory.push('/profile/' + this.props.friendship.user._id);
 	  },
 	  render: function render() {
-	    var tooltip = "Dernier Statut de " + this.props.name;
+
+	    var lastPost = this.props.friendship.user.last_post || "";
+	    var tooltip = void 0;
+
+	    if (!lastPost || lastPost == "") {
+	      var statusArray = ["Hasta la vista baby !", "Why so serious ?", "May the force be with you.", "I'll be back.", "Are you not entertained ?", "You talkin' to me ?", "I love the smell of Napalm in the morning", "I am your father", "I’m the king of the world !", "It’s alive! It’s alive !", "You shall not pass !", "Madness ? This is Sparta !"];
+	      tooltip = statusArray[Math.floor(Math.random() * statusArray.length)];
+	    } else if (lastPost.length < 50) tooltip = lastPost;else {
+	      tooltip = lastPost.substr(0, 50) + "...";
+	    }
+
+	    var colorArray = ["#1ABC9C", "#2ECC71", "#3498DB", "#AF7AC4", "#34495E", "#F1C40F", "#E67E22", "#E74C3C", "#ECF0F1", "#AAB7B7"];
+
+	    var backgroundColor = colorArray[Math.floor(Math.random() * colorArray.length)];
 
 	    return React.createElement(
 	      'div',
-	      { onClick: this.openFriendProfile, className: 'friendBox hoverable tooltipped', 'data-position': 'bottom', 'data-delay': '50', 'data-tooltip': tooltip, style: { backgroundColor: this.props.color } },
+	      { onClick: this.openFriendProfile, className: 'friendBox hoverable tooltipped', 'data-position': 'bottom', 'data-delay': '50', 'data-tooltip': tooltip, style: { backgroundColor: backgroundColor } },
 	      React.createElement(
 	        'p',
 	        null,
-	        this.props.name
+	        this.props.friendship.user.firstname + " " + this.props.friendship.user.lastname
 	      )
 	    );
 	  }
@@ -1149,13 +1535,13 @@
 	module.exports = FriendBox;
 
 /***/ },
-/* 21 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var Messages = __webpack_require__(22);
+	var Messages = __webpack_require__(26);
 
 	var Chat = React.createClass({
 	    displayName: 'Chat',
@@ -1237,7 +1623,7 @@
 	module.exports = Chat;
 
 /***/ },
-/* 22 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1276,20 +1662,23 @@
 	module.exports = Messages;
 
 /***/ },
-/* 23 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(16);
-	var Footer = __webpack_require__(18);
-	var PostNewFeed = __webpack_require__(24);
-	var Wall = __webpack_require__(25);
-	var FriendsList = __webpack_require__(29);
-	var ProfileData = __webpack_require__(31);
+	var NavBar = __webpack_require__(17);
+	var Footer = __webpack_require__(22);
+	var PostInput = __webpack_require__(28);
+	var Wall = __webpack_require__(29);
+	var FriendsList = __webpack_require__(33);
+	var ProfileData = __webpack_require__(35);
+	var config = __webpack_require__(13);
+	var PostsService = __webpack_require__(37);
+	var UserService = __webpack_require__(19);
 
-	var ToolBar = __webpack_require__(33);
+	var ToolBar = __webpack_require__(38);
 
 	var UserProfile = React.createClass({
 	  displayName: 'UserProfile',
@@ -1297,124 +1686,121 @@
 
 	    return {
 	      display: 0,
-	      user: this.findUserById(this.props.params.username)
+	      user: {},
+	      wall: []
 	    };
 	  },
 	  componentDidMount: function componentDidMount() {
 	    $('.profile_parallax').parallax();
-	  },
-	  findUserById: function findUserById(id) {
 
-	    return {
-	      profile: {
-	        firstname: "Camille",
-	        lastname: "Bargoin",
-	        age: 30,
-	        email: "camille@minibook.com",
-	        address: "87 rue Saint Fargeau",
-	        city: "Paris"
+	    // localStorage.getItem('userId')
+	    var self = this;
+	    this.findUserWallById(this.props.params.id, function (wall) {
+
+	      self.setState({
+	        user: wall.user,
+	        wall: wall.posts
+	      });
+	    });
+	  },
+	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+	    $('.wallPost .tooltipped').tooltip({ delay: 50 });
+	  },
+	  findUserWallById: function findUserWallById(id, callback) {
+
+	    $.ajax({
+	      method: "GET",
+	      url: config[process.env.NODE_ENV].api + '/users/wall/' + id,
+	      data: { sessionId: localStorage.getItem("sessionId") },
+	      success: function success(data, status) {
+
+	        callback(data);
 	      },
-	      posts: [{
-	        id: 1,
-	        body: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.",
-	        comments: [{
-	          author: "John Rambo",
-	          body: "Yeah ca claque!"
-	        }, {
-	          author: "Miley Cirus",
-	          body: "Lolilol"
-	        }, {
-	          author: "Cmd Cousteau",
-	          body: "..."
-	        }]
-	      }, {
-	        id: 2,
-	        body: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.",
-	        comments: [{
-	          author: "John Rambo",
-	          body: "Yeah ca claque!"
-	        }, {
-	          author: "Miley Cirus",
-	          body: "Lolilol"
-	        }, {
-	          author: "Cmd Cousteau",
-	          body: "..."
-	        }]
-	      }, {
-	        id: 3,
-	        body: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.",
-	        comments: [{
-	          author: "John Rambo",
-	          body: "Yeah ca claque!"
-	        }, {
-	          author: "Miley Cirus",
-	          body: "Lolilol"
-	        }, {
-	          author: "Cmd Cousteau",
-	          body: "..."
-	        }]
-	      }]
-	    };
+	      error: function error(jqXHR, status, _error) {
+	        console.log("find user by id error");
+	        Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	      }
+
+	    });
 	  },
 	  selectContent: function selectContent(index) {
 	    this.setState({
 	      display: index
 	    });
 	  },
-	  postFeed: function postFeed(post) {
+	  createPost: function createPost(post) {
 
+	    var self = this;
 	    var user = this.state.user;
-	    user.posts.unshift({
-	      id: Math.random() * 10000000,
+	    var wall = this.state.wall;
+
+	    var newPost = {
 	      body: post,
-	      comments: []
-	    });
+	      created_by: {
+	        userId: user._id
+	      }
+	    };
 
-	    this.setState({
-	      user: user
-	    });
+	    PostsService.create(newPost, user._id, function (result) {
+	      console.log("posts service callback");
 
-	    // CALL API SERVER & SAVE IN DATABASE
+	      wall.unshift(newPost);
+
+	      self.setState({
+	        wall: wall
+	      });
+	    });
 	  },
 	  postComment: function postComment(comment, postId) {
 
-	    console.log(comment);
-	    console.log(postId);
-
+	    var self = this;
 	    var user = this.state.user;
+	    var wall = this.state.wall;
 
-	    for (var i = 0; i < user.posts.length; i++) {
-	      if (user.posts[i].id == postId) {
-	        user.posts[i].comments.push({
-	          author: this.state.user.profile.firstname + " " + this.state.user.profile.lastname,
-	          body: comment
-	        });
-
-	        this.setState({
-	          user: user
-	        });
-
-	        // CALL API SERVER & SAVE IN DATABASE
-	        break;
+	    var newComment = {
+	      body: comment,
+	      created_by: {
+	        userId: user._id
 	      }
-	    }
+	    };
+
+	    PostsService.addComment(newComment, postId, function () {
+
+	      for (var i = 0; i < wall.length; i++) {
+	        if (wall[i]._id == postId) {
+
+	          wall[i].comments.push(newComment);
+
+	          self.setState({
+	            wall: wall
+	          });
+
+	          break;
+	        }
+	      }
+	    });
 	  },
 	  updateProfile: function updateProfile(field) {
 
 	    var user = this.state.user;
-	    user.profile[field.label] = field.value;
 
+	    user[field.label] = field.value;
 	    this.setState({
 	      user: user
 	    });
 
-	    // CALL API SERVER & SAVE IN DATABASE
+	    var updatedFields = {};
+	    updatedFields[field.label] = field.value;
+
+	    UserService.update(user._id, updatedFields, function () {
+	      Materialize.toast("Champs modifié avec succès", 2000, 'toastSuccess');
+	    });
 	  },
 	  render: function render() {
 
 	    var displayContent;
 
-	    if (this.state.display === 0) displayContent = React.createElement(Wall, { posts: this.state.user.posts, postComment: this.postComment });else if (this.state.display == 1) displayContent = React.createElement(FriendsList, null);else if (this.state.display == 2) displayContent = React.createElement(ProfileData, { profile: this.state.user.profile, updateProfile: this.updateProfile });
+	    if (this.state.display === 0) displayContent = React.createElement(Wall, { posts: this.state.wall, postComment: this.postComment });else if (this.state.display == 1) displayContent = React.createElement(FriendsList, null);else if (this.state.display == 2) displayContent = React.createElement(ProfileData, { profile: this.state.user, updateProfile: this.updateProfile });
 
 	    return React.createElement(
 	      'div',
@@ -1441,7 +1827,7 @@
 	          'div',
 	          { className: 'container' },
 	          React.createElement(ToolBar, { selectContent: this.selectContent }),
-	          React.createElement(PostNewFeed, { post: this.postFeed })
+	          React.createElement(PostInput, { post: this.createPost })
 	        )
 	      ),
 	      displayContent,
@@ -1453,38 +1839,38 @@
 	module.exports = UserProfile;
 
 /***/ },
-/* 24 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
 
-	var PostNewFeed = React.createClass({
-	  displayName: "PostNewFeed",
+	var PostInput = React.createClass({
+	  displayName: "PostInput",
 	  getInitialState: function getInitialState() {
 	    return {};
 	  },
-	  submitNewFeed: function submitNewFeed(e) {
+	  submitPost: function submitPost(e) {
 	    e.preventDefault();
-	    this.props.post(this.refs.feedInput.value);
+	    this.props.post(this.refs.postInput.value);
 
-	    this.refs.feedInput.value = "";
+	    this.refs.postInput.value = "";
 	  },
 	  render: function render() {
 	    return React.createElement(
 	      "div",
-	      { className: "row postNewFeedBox" },
+	      { className: "row postInputComponent" },
 	      React.createElement(
 	        "div",
 	        { className: "card-panel hoverable col s8 offset-s2 m6 offset-m3" },
 	        React.createElement(
 	          "form",
-	          { className: "input-field col s12", onSubmit: this.submitNewFeed },
-	          React.createElement("input", { id: "newFeed", type: "text", className: "validate", ref: "feedInput" }),
+	          { className: "input-field col s12", onSubmit: this.submitPost },
+	          React.createElement("input", { id: "newPost", type: "text", className: "validate", ref: "postInput" }),
 	          React.createElement(
 	            "label",
-	            { "for": "newFeed" },
+	            { "for": "newPost" },
 	            "Exprime-toi !"
 	          )
 	        )
@@ -1493,16 +1879,16 @@
 	  }
 	});
 
-	module.exports = PostNewFeed;
+	module.exports = PostInput;
 
 /***/ },
-/* 25 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
-	var WallFeed = __webpack_require__(26);
+	var WallPost = __webpack_require__(30);
 
 	var Wall = React.createClass({
 	  displayName: "Wall",
@@ -1511,9 +1897,12 @@
 	  },
 	  render: function render() {
 
+	    var posts = this.props.posts;
+	    posts.propAsort("created_at");
+
 	    var self = this;
 	    var wallPosts = this.props.posts.map(function (post, i) {
-	      return React.createElement(WallFeed, { post: post, key: i, postComment: self.props.postComment });
+	      return React.createElement(WallPost, { post: post, key: i, postComment: self.props.postComment });
 	    });
 
 	    return React.createElement(
@@ -1527,41 +1916,46 @@
 	module.exports = Wall;
 
 /***/ },
-/* 26 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FeedCommentBox = __webpack_require__(27);
+	var PostCommentsList = __webpack_require__(31);
 
-	var WallFeed = React.createClass({
-	  displayName: 'WallFeed',
+	var WallPost = React.createClass({
+	  displayName: 'WallPost',
 	  getInitialState: function getInitialState() {
 	    return {};
 	  },
 	  postComment: function postComment(e) {
 	    e.preventDefault();
 
-	    this.props.postComment(this.refs.commentInput.value, this.props.post.id);
+	    this.props.postComment(this.refs.commentInput.value, this.props.post._id);
+	    this.refs.commentInput.value = "";
 	  },
 	  render: function render() {
 
 	    var commentsContainer;
 
 	    if (this.props.post.comments) {
-	      commentsContainer = React.createElement(FeedCommentBox, { comments: this.props.post.comments });
+	      commentsContainer = React.createElement(PostCommentsList, { comments: this.props.post.comments });
 	    } else {
-	      commentsContainer = React.createElement('div', null);
+	      commentsContainer = React.createElement('div', null);+0;
 	    }
+
+	    var post = this.props.post;
+	    var author = post.created_by;
+	    var authorFullname = author ? author.firstname + " " + author.lastname : null;
 
 	    return React.createElement(
 	      'div',
-	      { style: { margin: "50px 0" }, className: 'wallFeed row' },
+	      { style: { margin: "50px 0" }, className: 'wallPost row' },
 	      React.createElement(
 	        'div',
 	        { className: 'col l1 offset-l2 m1 offset-m1 s1' },
-	        React.createElement('div', { style: { height: "60px", width: "60px", marginTop: "7px" }, className: 'blue tooltipped hoverable', 'data-position': 'left', 'data-delay': '50', 'data-tooltip': 'Camille Bargoin' })
+	        React.createElement('div', { style: { height: "60px", width: "60px", marginTop: "7px" }, className: 'blue tooltipped hoverable', 'data-position': 'left', 'data-delay': '50', 'data-tooltip': authorFullname })
 	      ),
 	      React.createElement(
 	        'div',
@@ -1587,26 +1981,26 @@
 	  }
 	});
 
-	module.exports = WallFeed;
+	module.exports = WallPost;
 
 /***/ },
-/* 27 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var Comment = __webpack_require__(28);
+	var Comment = __webpack_require__(32);
 
-	var FeedCommentBox = React.createClass({
-	  displayName: 'FeedCommentBox',
+	var PostCommentsList = React.createClass({
+	  displayName: 'PostCommentsList',
 	  getInitialState: function getInitialState() {
 	    return {};
 	  },
 	  render: function render() {
 
 	    var comments = this.props.comments.map(function (comment, i) {
-	      return React.createElement(Comment, { body: comment.body, author: comment.author, key: i });
+	      return React.createElement(Comment, { comment: comment, key: i });
 	    });
 
 	    return React.createElement(
@@ -1617,10 +2011,10 @@
 	  }
 	});
 
-	module.exports = FeedCommentBox;
+	module.exports = PostCommentsList;
 
 /***/ },
-/* 28 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1633,20 +2027,25 @@
 	    return {};
 	  },
 	  render: function render() {
+
+	    console.log(this.props);
+
+	    var comment = this.props.comment;
+	    var author = comment.created_by;
+	    var authorFullname = author ? author.firstname + " " + author.lastname : null;
+
 	    return React.createElement(
 	      "div",
 	      { style: { marginTop: "20px" }, className: "card hoverable" },
 	      React.createElement(
 	        "p",
 	        { style: { margin: 0, padding: "5px 20px 0" } },
-	        "\"",
-	        this.props.body,
-	        "\""
+	        comment.body
 	      ),
 	      React.createElement(
 	        "p",
 	        { style: { fontWeight: "bold", margin: "0 20px 0 0", padding: "0 0 5px 0", textAlign: "right" } },
-	        this.props.author
+	        authorFullname
 	      )
 	    );
 	  }
@@ -1655,13 +2054,13 @@
 	module.exports = Comment;
 
 /***/ },
-/* 29 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendsListItem = __webpack_require__(30);
+	var FriendsListItem = __webpack_require__(34);
 
 	var FriendsList = React.createClass({
 	  displayName: 'FriendsList',
@@ -1687,7 +2086,7 @@
 	module.exports = FriendsList;
 
 /***/ },
-/* 30 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1732,13 +2131,13 @@
 	module.exports = FriendsListItem;
 
 /***/ },
-/* 31 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var ProfileDataField = __webpack_require__(32);
+	var ProfileDataField = __webpack_require__(36);
 
 	var ProfileData = React.createClass({
 	  displayName: 'ProfileData',
@@ -1769,15 +2168,16 @@
 	module.exports = ProfileData;
 
 /***/ },
-/* 32 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	var React = __webpack_require__(3);
+	var config = __webpack_require__(13);
 
 	var ProfileDataField = React.createClass({
-	  displayName: "ProfileDataField",
+	  displayName: 'ProfileDataField',
 	  getInitialState: function getInitialState() {
 	    return {
 	      edit: false
@@ -1801,21 +2201,21 @@
 	    });
 	  },
 	  render: function render() {
-	    console.log(this.state.edit);
+
 	    if (this.state.edit) {
 	      return React.createElement(
-	        "li",
-	        { className: "collection-item row" },
+	        'li',
+	        { className: 'collection-item row' },
 	        React.createElement(
-	          "form",
+	          'form',
 	          { onSubmit: this.save },
 	          React.createElement(
-	            "div",
-	            { className: "input-field col s12" },
-	            React.createElement("input", { id: this.props.id, type: "text", className: "validate", onBlur: this.save, ref: "input" }),
+	            'div',
+	            { className: 'input-field col s12' },
+	            React.createElement('input', { id: this.props.id, type: 'text', className: 'validate', onBlur: this.save, ref: 'input' }),
 	            React.createElement(
-	              "label",
-	              { "for": this.props.id },
+	              'label',
+	              { 'for': this.props.id },
 	              this.props.label
 	            )
 	          )
@@ -1824,25 +2224,25 @@
 	    }
 
 	    return React.createElement(
-	      "li",
-	      { className: "collection-item row" },
+	      'li',
+	      { className: 'collection-item row' },
 	      React.createElement(
-	        "p",
-	        { className: "col s5" },
+	        'p',
+	        { className: 'col s5' },
 	        this.props.label
 	      ),
 	      React.createElement(
-	        "p",
-	        { className: "col s5" },
+	        'p',
+	        { className: 'col s5' },
 	        this.props.value
 	      ),
 	      React.createElement(
-	        "a",
-	        { className: "btn-floating btn-medium waves-effect waves-light green accent-4 right", onClick: this.edit },
+	        'a',
+	        { className: 'btn-floating btn-medium waves-effect waves-light green accent-4 right', onClick: this.edit },
 	        React.createElement(
-	          "i",
-	          { className: "material-icons" },
-	          "edit"
+	          'i',
+	          { className: 'material-icons' },
+	          'edit'
 	        )
 	      )
 	    );
@@ -1852,7 +2252,104 @@
 	module.exports = ProfileDataField;
 
 /***/ },
-/* 33 */
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// var $ = require('jquery');
+	var config = __webpack_require__(13);
+
+	var PostsService = {
+
+	    getByUserId: function getByUserId(userId, callback) {
+
+	        $.ajax({
+	            type: 'GET',
+	            url: config[process.env.NODE_ENV].api + '/posts/user/' + userId,
+	            data: { sessionId: localStorage.getItem("sessionId") },
+	            success: function success(data, status, jqXHR) {
+
+	                if (data.error) {
+	                    console.log(data.error);
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    callback(data);
+	                }
+	            },
+	            error: function error(jqXHR, status, _error) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    },
+
+	    create: function create(newPost, target, callback) {
+
+	        var payload = {
+	            post: newPost,
+	            sessionId: localStorage.getItem("sessionId"),
+	            target: target
+	        };
+
+	        $.ajax({
+	            type: 'POST',
+	            url: config[process.env.NODE_ENV].api + '/posts/create',
+	            // post payload:
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+
+	                if (data.error) {
+	                    console.log(data.error);
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    callback();
+	                }
+	            },
+	            error: function error(jqXHR, status, _error2) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    },
+
+	    addComment: function addComment(newComment, postId, callback) {
+
+	        var payload = {
+	            comment: newComment,
+	            sessionId: localStorage.getItem("sessionId"),
+	            postId: postId
+	        };
+
+	        $.ajax({
+	            type: 'POST',
+	            url: config[process.env.NODE_ENV].api + '/posts/addComment',
+	            // post payload:
+	            data: JSON.stringify(payload),
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+
+	                if (data.error) {
+	                    console.log(data.error);
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    callback();
+	                }
+	            },
+	            error: function error(jqXHR, status, _error3) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+
+	        });
+	    }
+
+	};
+
+	module.exports = PostsService;
+
+/***/ },
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1913,15 +2410,15 @@
 	module.exports = ToolBar;
 
 /***/ },
-/* 34 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(16);
-	var MessageList = __webpack_require__(35);
-	var Pagination = __webpack_require__(38);
+	var NavBar = __webpack_require__(17);
+	var MessageList = __webpack_require__(40);
+	var Pagination = __webpack_require__(43);
 
 	var Inbox = React.createClass({
 	  displayName: 'Inbox',
@@ -1949,13 +2446,13 @@
 	module.exports = Inbox;
 
 /***/ },
-/* 35 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var MessageLine = __webpack_require__(36);
+	var MessageLine = __webpack_require__(41);
 
 	var MessageList = React.createClass({
 	  displayName: 'MessageList',
@@ -1988,13 +2485,13 @@
 	module.exports = MessageList;
 
 /***/ },
-/* 36 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var moment = __webpack_require__(37);
+	var moment = __webpack_require__(42);
 
 	var MessageLine = React.createClass({
 	  displayName: 'MessageLine',
@@ -2052,13 +2549,13 @@
 	module.exports = MessageLine;
 
 /***/ },
-/* 37 */
+/* 42 */
 /***/ function(module, exports) {
 
 	module.exports = require("moment");
 
 /***/ },
-/* 38 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2153,15 +2650,15 @@
 	module.exports = Pagination;
 
 /***/ },
-/* 39 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(16);
-	var UserList = __webpack_require__(40);
-	var Stats = __webpack_require__(42);
+	var NavBar = __webpack_require__(17);
+	var UserList = __webpack_require__(45);
+	var Stats = __webpack_require__(47);
 
 	var Admin = React.createClass({
 	  displayName: 'Admin',
@@ -2258,7 +2755,7 @@
 	module.exports = Admin;
 
 /***/ },
-/* 40 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2266,7 +2763,7 @@
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var React = __webpack_require__(3);
-	var UserListItem = __webpack_require__(41);
+	var UserListItem = __webpack_require__(46);
 
 	var UserList = React.createClass({
 	  displayName: 'UserList',
@@ -2294,7 +2791,7 @@
 	module.exports = UserList;
 
 /***/ },
-/* 41 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2340,7 +2837,7 @@
 	module.exports = UserListItem;
 
 /***/ },
-/* 42 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2367,6 +2864,58 @@
 	});
 
 	module.exports = Stats;
+
+/***/ },
+/* 48 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var Auth = __webpack_require__(11);
+	var browserHistory = __webpack_require__(5).browserHistory;
+
+	var Logout = React.createClass({
+	  displayName: 'Logout',
+	  getInitialState: function getInitialState() {
+	    return {
+	      loggedOut: false
+	    };
+	  },
+	  componentWillMount: function componentWillMount() {
+
+	    var self = this;
+
+	    Auth.logout(function () {
+	      self.setState({
+	        loggedOut: true
+	      });
+	    });
+	  },
+	  componentDidMount: function componentDidMount() {
+	    setTimeout(function () {
+	      browserHistory.push('/');
+	    }, 3000);
+	  },
+	  render: function render() {
+
+	    console.log("render");
+
+	    var message = this.state.loggedOut ? "A bientôt !" : "Déconnexion en cours...";
+
+	    return React.createElement(
+	      'div',
+	      { className: '' },
+	      React.createElement(
+	        'p',
+	        { style: { color: "white" } },
+	        message
+	      )
+	    );
+	  }
+	});
+
+	module.exports = Logout;
 
 /***/ }
 /******/ ]);

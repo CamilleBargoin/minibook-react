@@ -34,6 +34,35 @@ var AuthService = {
         });
       }
     },
+
+    loggedInAdmin: function(success, error) {
+
+      if (Storage) {
+        $.ajax({
+          method: "GET",
+            url: config[process.env.NODE_ENV].api + '/users/secureAdmin',
+            data: {sessionId: localStorage.getItem("sessionId")},
+            success: function(data, status) {
+
+              if (data.success) {
+                console.log("loggedIn success");
+                console.log(data);
+                success();
+                }
+              else {
+                console.log(data);
+                error();
+              }
+            },
+            error: function(jqXHR, status, error) {
+              console.log("loggedIn error");
+              Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+              error();
+            }
+
+        });
+      }
+    },
      
 
 

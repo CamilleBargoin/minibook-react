@@ -13,6 +13,7 @@ var UserProfile = require('./components/profile/UserProfile.jsx');
 var Inbox = require('./components/inbox/Inbox.jsx');
 var Admin = require('./components/admin/Admin.jsx');
 var Logout = require('./components/logout.jsx');
+var Forbidden = require('./components/forbidden.jsx');
 
 var auth = require("./auth.js");
 
@@ -27,16 +28,19 @@ module.exports = (
     <Route path="/profile" component={UserProfile} onEnter={requireCredentials}>
     </Route>
 
-    <Route path="/profile/:username" component={UserProfile} onEnter={requireCredentials}>
+    <Route path="/profile/:id" component={UserProfile} onEnter={requireCredentials}>
     </Route>
 
     <Route path="/inbox" component={Inbox} onEnter={requireCredentials}>
     </Route>
 
-    <Route path="/admin" component={Admin} onEnter={requireCredentials}>
+    <Route path="/admin" component={Admin} onEnter={requireAdminCredentials}>
     </Route>
 
-     <Route path="/logout" component={Logout} >
+    <Route path="/logout" component={Logout} >
+    </Route>
+
+    <Route path="/forbidden" component={Forbidden} >
     </Route>
   </Route>
 );
@@ -49,6 +53,18 @@ function requireCredentials(nextState, replace, next) {
     next();
   }, function() {
     replace("/");
+    next();
+  }); 
+  
+
+}
+
+function requireAdminCredentials(nextState, replace, next) {
+
+  auth.loggedInAdmin(function() {
+    next();
+  }, function() {
+    replace("/forbidden");
     next();
   }); 
   

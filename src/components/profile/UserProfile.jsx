@@ -25,10 +25,34 @@ var UserProfile = React.createClass({
   },
 
   componentDidMount() {
+
+    var self = this;
       $('.profile_parallax').parallax();  
 
+
+      $('#profilePicture').append($.cloudinary.unsigned_upload_tag("ygdxw3yr", 
+        { cloud_name: 'minibook' }));
+
+      $('.cloudinary_fileupload').hide();
+
+      $('.cloudinary_fileupload').bind('cloudinarydone', function (e, data) {
+       
+        console.log(data.result);
+        // let user = self.state.user;
+        // user.avatar = data.result.secure_url;
+        // self.setState({
+        //   user: user
+        // });
+
+        self.updateProfile({
+          label: "avatar",
+          value: data.result.secure_url
+        });
+
+      });
+
       var self = this;
-      this.findUserWallById(localStorage.getItem('userId'), function(wall) {
+      this.findUserWallById(this.props.params.id, function(wall) {
 
           self.setState({
             user: wall.user,
@@ -131,6 +155,10 @@ var UserProfile = React.createClass({
 
   },
 
+  selectAvatar() {
+        $('.cloudinary_fileupload').trigger('click');
+  },
+
   updateProfile(field) {
 
     const user = this.state.user;
@@ -160,6 +188,17 @@ var UserProfile = React.createClass({
     else if (this.state.display == 2)
       displayContent = <ProfileData profile={this.state.user} updateProfile={this.updateProfile} />;
 
+
+    console.log(this.state.user);
+
+    let avatar =  <i className="large material-icons" >add</i>;
+    if (this.state.user.avatar) {
+      let url = this.state.user.avatar;
+      url = url.replace("/upload/", "/upload/w_200,h_200,c_fill/");
+      avatar = <img src={url} />;
+    }
+
+
     return (
         <div id="userProfile">
           <NavBar />
@@ -168,8 +207,9 @@ var UserProfile = React.createClass({
             <div className="profile_parallax" >
               <img src="/images/user-background1.jpg" />
             </div>
-            <div id="profilePicture" className="hoverable">
-              <i className="large material-icons" >add</i>
+            <div id="profilePicture" className="hoverable" onClick={this.selectAvatar} >
+              {avatar}
+            
             </div>
             <div className="container">
               <ToolBar selectContent={this.selectContent} />
@@ -179,6 +219,7 @@ var UserProfile = React.createClass({
 
           {displayContent}
           <div style={{height:"350px"}} />
+
           {/*<Footer />*/}
         </div>
     );

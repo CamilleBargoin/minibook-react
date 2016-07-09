@@ -37,7 +37,7 @@ console.log("login action");
               <label for="email">e-mail</label>
             </div>
             <div className="input-field col s12">
-              <input id="password" name="password" type="text" className="validate" onChange={this.updateField}/>
+              <input id="password" type="password" name="password" className="validate" onChange={this.updateField}/>
               <label for="password">password</label>
             </div>
           </div>

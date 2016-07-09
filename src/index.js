@@ -26,3 +26,8 @@ Array.prototype.propSort = function propSort(prop) {
 Array.prototype.propAsort = function propSort(prop) {
   return this.sort(function(a, b) { return +b[prop] - +a[prop]; });
 };
+
+
+
+
+$.cloudinary.config({ cloud_name: 'minibook', api_key: '778716888827849'});

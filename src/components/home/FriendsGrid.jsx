@@ -6,35 +6,37 @@ var UserService = require('../../services/UserService.jsx');
 var FriendBoxContainer = React.createClass({
 
   getInitialState() {
+    if (this.props.user) {
+        return {
+          friendships: this.props.user.friends || []
+        };
+    }
+
     return {
-      friends: []
-    };
+      friendships: []
+    }
   },
 
-  componentDidMount() {
+  componentWillReceiveProps(nextProps) {
+      this.setState({
+        friendships: nextProps.user.friends || []
+      });  
+  },
+
+  componentDidUpdate() {
       $('.friendBox.tooltipped').tooltip({delay: 50});    
-
-
-      const self = this;
-
-      // UserService.getFriends(localStorage.getItem('userId'), function(user) {
-
-      //   console.log(user);
-      //   console.log("_____");
-      //   self.setState({
-      //     friends: user.friends
-      //   });
-      // });
-
   },
 
   render() {
 
 
-    var friendBoxes = this.state.friends.map(function(friend, i) {
-      return (
-         <FriendBox name={friend.firstname + " " + friend.lastname} key={i} color={"#FFC952"} />
-      );
+
+    var friendBoxes = this.state.friendships.map(function(friendship, i) {
+      if (friendship.status == "accepted") {
+        return (
+           <FriendBox friendship={friendship} key={i} />
+        );
+      }
     });
 
     var width = Math.floor($(document).width() / 164) * 164 + "px";

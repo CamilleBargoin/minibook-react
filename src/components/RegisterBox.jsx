@@ -1,6 +1,7 @@
 var React = require('react');
 var browserHistory = require('react-router').browserHistory;
 var config = require('../../config.js');
+var Auth = require('../auth.js');
 
 
 var RegisterBox = React.createClass({
@@ -44,7 +45,9 @@ var RegisterBox = React.createClass({
 
             Materialize.toast("Ton compte vient d'être créé!", 2000, 'toastSuccess', function() {
               //req.session.test = "ceciestuntest";
-              browserHistory.push('/home');
+              Auth.login(newUser.email, newUser.password, function() {
+                browserHistory.push('/home');
+              });
             });
          }
         },
