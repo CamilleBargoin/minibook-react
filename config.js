@@ -3,6 +3,6 @@ module.exports = {
         "api" : "https://minibook-express.herokuapp.com"
     },
     "development": {
-        "api": "https://minibook-express.herokuapp.com"
+        "api": "http://localhost:3000"
     }
 };

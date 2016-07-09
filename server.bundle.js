@@ -562,7 +562,7 @@
 	        "api": "https://minibook-express.herokuapp.com"
 	    },
 	    "development": {
-	        "api": "https://minibook-express.herokuapp.com"
+	        "api": "http://localhost:3000"
 	    }
 	};
 
@@ -805,6 +805,7 @@
 	var React = __webpack_require__(3);
 	var NavBarSearch = __webpack_require__(18);
 	var UserService = __webpack_require__(19);
+	var browserHistory = __webpack_require__(5).browserHistory;
 
 	var NavBarRequests = __webpack_require__(21);
 
@@ -853,6 +854,18 @@
 	      });
 	    }
 	  },
+	  displayHome: function displayHome() {
+	    browserHistory.push('/home');
+	  },
+	  logout: function logout() {
+	    browserHistory.push('/logout');
+	  },
+	  displayProfile: function displayProfile() {
+	    browserHistory.push("/profile/" + localStorage.getItem('userId'));
+	  },
+	  displayInbox: function displayInbox() {
+	    browserHistory.push("/inbox");
+	  },
 	  render: function render() {
 
 	    var display = this.requests.length > 0 ? { display: "block" } : { display: "none" };
@@ -873,7 +886,7 @@
 	            { className: 'center' },
 	            React.createElement(
 	              'a',
-	              { href: '/home', className: 'brand-logo' },
+	              { onClick: this.displayHome, className: 'brand-logo' },
 	              'minibook'
 	            ),
 	            React.createElement(NavBarSearch, null),
@@ -885,7 +898,7 @@
 	                null,
 	                React.createElement(
 	                  'a',
-	                  { href: '/logout' },
+	                  { onClick: this.logout },
 	                  'logout'
 	                )
 	              ),
@@ -903,7 +916,7 @@
 	                null,
 	                React.createElement(
 	                  'a',
-	                  { href: "/profile/" + localStorage.getItem('userId') },
+	                  { onClick: this.displayProfile },
 	                  'Mon profil'
 	                )
 	              ),
@@ -930,7 +943,7 @@
 	                null,
 	                React.createElement(
 	                  'a',
-	                  { href: '/inbox' },
+	                  { onClick: this.displayInbox },
 	                  React.createElement(
 	                    'i',
 	                    { className: 'material-icons' },

@@ -1,6 +1,7 @@
 var React = require('react');
 var NavBarSearch = require('./NavBarSearch.jsx');
 var UserService = require('../../services/UserService.jsx');
+    var browserHistory = require('react-router').browserHistory;
 
 var NavBarRequests = require("./NavBarRequests.jsx");
 
@@ -63,7 +64,23 @@ var NavBar = React.createClass({
       });
     }
   },
+
+  displayHome() {
+    browserHistory.push('/home');
+  },
+
+  logout() {
+    browserHistory.push('/logout');
+  },
+
+  displayProfile() {
+    browserHistory.push("/profile/" + localStorage.getItem('userId'));
+  },
   
+  displayInbox() {
+    browserHistory.push("/inbox");
+  },
+
   render() {
 
         
@@ -76,14 +93,14 @@ var NavBar = React.createClass({
           <nav className="green accent-4">
             <div className="nav-wrapper">
               <div className="center" >
-                <a href="/home" className="brand-logo">minibook</a>
+                <a onClick={this.displayHome}  className="brand-logo">minibook</a>
                 <NavBarSearch />
                 <ul className="hide-on-med-and-down" style={{position: "absolute", top: 0, right: 0}}>
-                  <li><a href="/logout">logout</a></li>
+                  <li><a onClick={this.logout} >logout</a></li>
                   <li><a onClick={this.props.openChat} href="#">test chat</a></li>
-                  <li><a href={"/profile/" + localStorage.getItem('userId')}>Mon profil</a></li>
+                  <li><a onClick={this.displayProfile}>Mon profil</a></li>
                   <li style={{position: "relative"}}><a><i onClick={this.showRequests}  className="material-icons">group</i><div style={display} className="requestsBadge">{this.requests.length}</div></a></li>
-                  <li><a href="/inbox"><i className="material-icons">email</i></a></li>
+                  <li><a onClick={this.displayInbox}><i className="material-icons">email</i></a></li>
                 </ul>
               </div>
             </div>
