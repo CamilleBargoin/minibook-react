@@ -2,6 +2,8 @@
 var React = require('react');
 var Route = require('react-router').Route;
 var IndexRoute = require('react-router').IndexRoute;
+var browserHistory = require('react-router').browserHistory;
+var Router = require('react-router').Router;
 
 // var TodosApp = require("./components/TodosApp.jsx");
 var Users = require('./components/Users.jsx');
@@ -19,30 +21,32 @@ var auth = require("./auth.js");
 
 
 module.exports = (
-  <Route path="/" component={App}>
-    <IndexRoute component={Landing}/>
+  <Router history={browserHistory}>
+    <Route path="/" component={App}>
+      <IndexRoute component={Landing}/>
 
-    <Route path="/home" component={Home} onEnter={requireCredentials}>
-    </Route>
+      <Route path="/home" component={Home} onEnter={requireCredentials}>
+      </Route>
 
-    <Route path="/profile" component={UserProfile} onEnter={requireCredentials}>
-    </Route>
+      <Route path="/profile" component={UserProfile} onEnter={requireCredentials}>
+      </Route>
 
-    <Route path="/profile/:id" component={UserProfile} onEnter={requireCredentials}>
-    </Route>
+      <Route path="/profile/:id" component={UserProfile} onEnter={requireCredentials}>
+      </Route>
 
-    <Route path="/inbox" component={Inbox} onEnter={requireCredentials}>
-    </Route>
+      <Route path="/inbox" component={Inbox} onEnter={requireCredentials}>
+      </Route>
 
-    <Route path="/admin" component={Admin} onEnter={requireAdminCredentials}>
-    </Route>
+      <Route path="/admin" component={Admin} onEnter={requireAdminCredentials}>
+      </Route>
 
-    <Route path="/logout" component={Logout} >
-    </Route>
+      <Route path="/logout" component={Logout} >
+      </Route>
 
-    <Route path="/forbidden" component={Forbidden} >
+      <Route path="/forbidden" component={Forbidden} >
+      </Route>
     </Route>
-  </Route>
+  </Router>
 );
 
 

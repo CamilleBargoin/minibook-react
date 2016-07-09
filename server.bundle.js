@@ -147,6 +147,8 @@
 	var React = __webpack_require__(3);
 	var Route = __webpack_require__(5).Route;
 	var IndexRoute = __webpack_require__(5).IndexRoute;
+	var browserHistory = __webpack_require__(5).browserHistory;
+	var Router = __webpack_require__(5).Router;
 
 	// var TodosApp = require("./components/TodosApp.jsx");
 	var Users = __webpack_require__(7);
@@ -163,16 +165,20 @@
 	var auth = __webpack_require__(11);
 
 	module.exports = React.createElement(
-	  Route,
-	  { path: '/', component: App },
-	  React.createElement(IndexRoute, { component: Landing }),
-	  React.createElement(Route, { path: '/home', component: Home, onEnter: requireCredentials }),
-	  React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireCredentials }),
-	  React.createElement(Route, { path: '/profile/:id', component: UserProfile, onEnter: requireCredentials }),
-	  React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireCredentials }),
-	  React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireAdminCredentials }),
-	  React.createElement(Route, { path: '/logout', component: Logout }),
-	  React.createElement(Route, { path: '/forbidden', component: Forbidden })
+	  Router,
+	  { history: browserHistory },
+	  React.createElement(
+	    Route,
+	    { path: '/', component: App },
+	    React.createElement(IndexRoute, { component: Landing }),
+	    React.createElement(Route, { path: '/home', component: Home, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/profile/:id', component: UserProfile, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireAdminCredentials }),
+	    React.createElement(Route, { path: '/logout', component: Logout }),
+	    React.createElement(Route, { path: '/forbidden', component: Forbidden })
+	  )
 	);
 
 	function requireCredentials(nextState, replace, next) {
