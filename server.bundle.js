@@ -162,6 +162,29 @@
 	var Logout = __webpack_require__(48);
 	var Forbidden = __webpack_require__(49);
 
+	var NoMatch = React.createClass({
+	  displayName: 'NoMatch',
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'container' },
+	      React.createElement(
+	        'div',
+	        { className: 'row', style: { paddingTop: "15%" } },
+	        React.createElement(
+	          'div',
+	          { className: 'col s12' },
+	          React.createElement(
+	            'p',
+	            { style: { color: "white" } },
+	            'Cette page est introuvable :\'('
+	          )
+	        )
+	      )
+	    );
+	  }
+	});
+
 	var auth = __webpack_require__(11);
 
 	module.exports = React.createElement(
@@ -177,7 +200,8 @@
 	    React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireCredentials }),
 	    React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireAdminCredentials }),
 	    React.createElement(Route, { path: '/logout', component: Logout }),
-	    React.createElement(Route, { path: '/forbidden', component: Forbidden })
+	    React.createElement(Route, { path: '/forbidden', component: Forbidden }),
+	    React.createElement(Route, { path: '*', component: NoMatch })
 	  )
 	);
 

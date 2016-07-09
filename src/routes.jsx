@@ -17,6 +17,22 @@ var Admin = require('./components/admin/Admin.jsx');
 var Logout = require('./components/logout.jsx');
 var Forbidden = require('./components/forbidden.jsx');
 
+var NoMatch = React.createClass({
+
+  render() {
+    return (
+        <div className="container">
+          <div className="row" style={{paddingTop: "15%"}}>
+            <div className="col s12">
+              <p style={{color: "white"}}>Cette page est introuvable :&#39;(</p>
+            </div>
+          </div>
+        </div>
+    );
+  }
+
+});
+
 var auth = require("./auth.js");
 
 
@@ -45,6 +61,7 @@ module.exports = (
 
       <Route path="/forbidden" component={Forbidden} >
       </Route>
+      <Route path="*" component={NoMatch}/>
     </Route>
   </Router>
 );
