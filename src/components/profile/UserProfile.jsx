@@ -17,6 +17,8 @@ var UserProfile = React.createClass({
 
   getInitialState() {
 
+    console.log("profile initial state");
+
     return {
       display: 0,
       user: {},
@@ -26,7 +28,9 @@ var UserProfile = React.createClass({
 
   componentDidMount() {
 
-    var self = this;
+      console.log("component did mount");
+
+      var self = this;
       $('.profile_parallax').parallax();  
 
 
@@ -178,6 +182,8 @@ var UserProfile = React.createClass({
   },
 
   render() {
+
+    console.log("profile render");
 
     var displayContent;
 

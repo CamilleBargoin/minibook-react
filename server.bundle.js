@@ -1629,6 +1629,8 @@
 	  displayName: 'UserProfile',
 	  getInitialState: function getInitialState() {
 
+	    console.log("profile initial state");
+
 	    return {
 	      display: 0,
 	      user: {},
@@ -1636,6 +1638,8 @@
 	    };
 	  },
 	  componentDidMount: function componentDidMount() {
+
+	    console.log("component did mount");
 
 	    var self = this;
 	    $('.profile_parallax').parallax();
@@ -1765,6 +1769,8 @@
 	    });
 	  },
 	  render: function render() {
+
+	    console.log("profile render");
 
 	    var displayContent;
 
