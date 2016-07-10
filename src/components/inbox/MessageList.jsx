@@ -19,11 +19,11 @@ var MessageList = React.createClass({
 
   render() {
 
-
+console.log(this.props.messages);
 
     var messageLines = this.props.messages.map(function(message, i) {
       return (
-        <MessageLine author={message.author} body={message.body} object={message.object} date={message.date} key={i}  />
+        <MessageLine author={message.created_by} body={message.body} subject={message.subject} date={message.created_at} key={i}  />
       );
     });
 

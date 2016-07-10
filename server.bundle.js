@@ -1453,7 +1453,7 @@
 	    var tooltip = void 0;
 
 	    if (!lastPost || lastPost == "") {
-	      var statusArray = ["Hasta la vista baby !", "Why so serious ?", "May the force be with you.", "I'll be back.", "Are you not entertained ?", "You talkin' to me ?", "I love the smell of Napalm in the morning", "I am your father", "I’m the king of the world !", "It’s alive! It’s alive !", "You shall not pass !", "Madness ? This is Sparta !", "Winter is coming."];
+	      var statusArray = ["Hasta la vista baby !", "Why so serious ?", "May the force be with you.", "I'll be back.", "Are you not entertained ?", "You talkin' to me ?", "I love the smell of Napalm in the morning", "I am your father", "I’m the king of the world !", "It’s alive! It’s alive !", "You shall not pass !", "Madness ? This is Sparta !", "Winter is coming.", "I see dead people"];
 	      tooltip = statusArray[Math.floor(Math.random() * statusArray.length)];
 	    } else if (lastPost.length < 50) tooltip = lastPost;else {
 	      tooltip = lastPost.substr(0, 50) + "...";

@@ -13,13 +13,13 @@ var Home = React.createClass({
   getInitialState() {
     return {
       chat: null,
-      user: null
+      user: this.props.user
     };
   },
 
 
   componentDidMount() {
-      this.getUser();
+      // this.getUser();
   },
 
   refreshState(stateProperty) {
@@ -65,7 +65,7 @@ var Home = React.createClass({
 
     return (
       <div>
-         <NavBar openChat={this.openChat} search="true" user={this.state.user} refresh={this.refreshState}/>
+         {/*<NavBar openChat={this.openChat} search="true" user={this.state.user} refresh={this.refreshState}/>*/}
          <FriendsGrid user={this.state.user} />
             {chat}
 

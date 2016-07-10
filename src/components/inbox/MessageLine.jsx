@@ -14,7 +14,12 @@ var MessageLine = React.createClass({
   render() {
 
 
-    var date = moment(this.props.date * 1000).format("MMMM Do");
+
+    var date = moment(this.props.date).format("MMMM Do");
+
+    let fullname = "";
+    if (this.props.author)
+      fullname = this.props.author.firstname + " " + this.props.author.lastname;
 
     return (
       
@@ -22,8 +27,8 @@ var MessageLine = React.createClass({
         <div className="collapsible-header">
           <div className="row">
             <i className="material-icons">whatshot</i>
-            <span className="col s2" style={{fontWeight: "bold"}}>{this.props.author}</span>
-            <span className="col s4">{this.props.object}</span>
+            <span className="col s2" style={{fontWeight: "bold"}}>{fullname}</span>
+            <span className="col s4">{this.props.subject}</span>
             <span className="col s2 offset-s3" style={{textAlign: "right"}}>{date}</span>
           </div>
         </div>

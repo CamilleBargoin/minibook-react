@@ -109,8 +109,13 @@ var UserService = {
               data: payload,
               success: function(data, status) {
 
-                if (callback)
-                    callback(data);
+                if (data.error) {
+                    Materialize.toast(data.error, 3000, 'toastError');
+                }
+                else {
+                    if (callback)
+                        callback(data);
+                }
               },
               error: function(jqXHR, status, error) {
                 console.log("find user by id error");

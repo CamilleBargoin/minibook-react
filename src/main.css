@@ -120,6 +120,16 @@ footer {position: absolute; bottom: 0; left: 0; right: 0}
     top: 2px;
 }
 
+.navbar-avatar {
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+
+
+
+
+
 #homePage h1.appTitle {
     text-align: center;
     color: #26ff6e;
@@ -341,6 +351,18 @@ textarea.materialize-textarea:focus:not([readonly])+label {
 #messageList .row {
     height: 40px;
     margin-bottom: 0;
+}
+
+#inboxForm label {
+    color: #202020;
+}
+
+#inboxForm textarea.materialize-textarea:focus:not([readonly]) {
+        border-bottom: 1px solid #202020;
+        box-shadow: 0 1px 00 #202020;
+}
+#inboxForm input, #inboxForm textarea.materialize-textarea {
+    border-bottom: 1px solid #202020;
 }
 
 /* PAGINATION */

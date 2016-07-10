@@ -33,7 +33,8 @@ var FriendBox = React.createClass({
         "It’s alive! It’s alive !",
         "You shall not pass !",
         "Madness ? This is Sparta !",
-        "Winter is coming."
+        "Winter is coming.",
+        "I see dead people"
       ]
       tooltip = statusArray[Math.floor(Math.random() * statusArray.length)];
     }

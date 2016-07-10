@@ -207,7 +207,6 @@ var UserProfile = React.createClass({
 
     return (
         <div id="userProfile">
-          <NavBar />
 
           <div className="parallax-container" >
             <div className="profile_parallax" >
