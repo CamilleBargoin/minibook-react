@@ -155,12 +155,12 @@
 	var Landing = __webpack_require__(7);
 	var App = __webpack_require__(13);
 
-	var Home = __webpack_require__(15);
+	var Home = __webpack_require__(20);
 	var UserProfile = __webpack_require__(26);
 	var Inbox = __webpack_require__(38);
-	var Admin = __webpack_require__(43);
-	var Logout = __webpack_require__(47);
-	var Forbidden = __webpack_require__(48);
+	var Admin = __webpack_require__(45);
+	var Logout = __webpack_require__(49);
+	var Forbidden = __webpack_require__(50);
 
 	var NoMatch = React.createClass({
 	  displayName: 'NoMatch',
@@ -254,12 +254,14 @@
 	  },
 	  render: function render() {
 
+	    console.log(this.props);
+
 	    var box;
 	    if (this.state.showLogin) {
 	      box = React.createElement(
 	        'div',
 	        null,
-	        React.createElement(LoginBox, null),
+	        React.createElement(LoginBox, { refreshUser: this.props.refreshUser }),
 	        React.createElement(
 	          'p',
 	          null,
@@ -334,8 +336,12 @@
 	  login: function login() {
 	    console.log("login action");
 
+	    var self = this;
+
 	    Auth.login(this.state.email, this.state.password, function () {
 	      console.log(window.document.cookie);
+	      console.log(self.props);
+	      self.props.refreshUser();
 	      browserHistory.push('/home');
 	    });
 	  },
@@ -681,18 +687,43 @@
 	var React = __webpack_require__(3);
 	var NavLink = __webpack_require__(14);
 	var IndexLink = __webpack_require__(5).IndexLink;
+	var NavBar = __webpack_require__(15);
+	var UserService = __webpack_require__(17);
 
 	var App = React.createClass({
 	  displayName: 'App',
 	  getInitialState: function getInitialState() {
-	    return {};
+	    return {
+	      user: {}
+	    };
+	  },
+	  componentDidMount: function componentDidMount() {
+
+	    this.getUser();
+	  },
+	  getUser: function getUser() {
+
+	    console.log("GET USER");
+
+	    var self = this;
+	    UserService.get(localStorage.getItem('userId'), function (user) {
+	      self.setState({
+	        user: user
+	      });
+	    });
+	  },
+	  destroyUser: function destroyUser() {
+	    this.setState({
+	      user: {}
+	    });
 	  },
 	  render: function render() {
 
 	    return React.createElement(
 	      'div',
 	      { style: { height: "100%" } },
-	      this.props.children
+	      React.createElement(NavBar, { user: this.state.user }),
+	      React.cloneElement(this.props.children, { user: this.state.user, refreshUser: this.getUser, destroyUser: this.destroyUser })
 	    );
 	  }
 	});
@@ -727,80 +758,11 @@
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(16);
-	var Footer = __webpack_require__(21);
-	var FriendsGrid = __webpack_require__(22);
-	var UserService = __webpack_require__(18);
-
-	var Chat = __webpack_require__(24);
-
-	var Home = React.createClass({
-	  displayName: 'Home',
-	  getInitialState: function getInitialState() {
-	    return {
-	      chat: null,
-	      user: null
-	    };
-	  },
-	  componentDidMount: function componentDidMount() {
-	    this.getUser();
-	  },
-	  refreshState: function refreshState(stateProperty) {
-	    switch (stateProperty) {
-
-	      case 'user':
-	        this.getUser();
-
-	    }
-	  },
-	  getUser: function getUser() {
-	    var self = this;
-	    UserService.get(localStorage.getItem('userId'), function (user) {
-	      self.setState({
-	        user: user
-	      });
-	    });
-	  },
-	  openChat: function openChat() {
-	    this.setState({
-	      chat: true
-	    });
-	  },
-	  closeChat: function closeChat() {
-	    this.setState({
-	      chat: null
-	    });
-	  },
-	  render: function render() {
-
-	    var chat;
-
-	    if (this.state.chat) chat = React.createElement(Chat, { name: 'Chuck Norris', closeChat: this.closeChat });else chat = React.createElement('div', null);
-
-	    return React.createElement(
-	      'div',
-	      null,
-	      React.createElement(NavBar, { openChat: this.openChat, search: 'true', user: this.state.user, refresh: this.refreshState }),
-	      React.createElement(FriendsGrid, { user: this.state.user }),
-	      chat
-	    );
-	  }
-	});
-
-	module.exports = Home;
-
-/***/ },
-/* 16 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var React = __webpack_require__(3);
-	var NavBarSearch = __webpack_require__(17);
-	var UserService = __webpack_require__(18);
+	var NavBarSearch = __webpack_require__(16);
+	var UserService = __webpack_require__(17);
 	var browserHistory = __webpack_require__(5).browserHistory;
 
-	var NavBarRequests = __webpack_require__(20);
+	var NavBarRequests = __webpack_require__(19);
 
 	var NavBar = React.createClass({
 	  displayName: 'NavBar',
@@ -810,7 +772,7 @@
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      user: this.props.user,
+	      user: this.props.user || {},
 	      showRequests: false
 	    };
 	  },
@@ -859,11 +821,129 @@
 	  displayInbox: function displayInbox() {
 	    browserHistory.push("/inbox");
 	  },
+	  displayAdmin: function displayAdmin() {
+	    browserHistory.push("/admin");
+	  },
 	  render: function render() {
 
-	    var display = this.requests.length > 0 ? { display: "block" } : { display: "none" };
+	    var components = void 0;
 
-	    var requestsList = this.state.showRequests ? React.createElement(NavBarRequests, { requests: this.requests, refresh: this.props.refresh }) : React.createElement('div', null);
+	    if (localStorage.getItem('sessionId')) {
+
+	      var display = this.requests.length > 0 ? { display: "block" } : { display: "none" };
+	      var name = this.state.user ? this.state.user.firstname : "";
+	      var requestsList = this.state.showRequests ? React.createElement(NavBarRequests, { requests: this.requests, refresh: this.props.refresh }) : React.createElement('div', null);
+
+	      var url = "";
+	      if (this.props.user.avatar) {
+	        url = this.props.user.avatar.replace("/upload/", "/upload/w_32,h_32,c_fill/");
+	      }
+
+	      var adminControl = React.createElement('div', null);
+	      if (this.props.user.role == 2) {
+	        adminControl = React.createElement(
+	          'a',
+	          { onClick: this.displayAdmin, className: 'adminControl' },
+	          React.createElement(
+	            'i',
+	            { className: 'material-icons' },
+	            'settings'
+	          ),
+	          'Administration'
+	        );
+	      }
+
+	      components = React.createElement(
+	        'div',
+	        { className: 'center' },
+	        React.createElement(
+	          'a',
+	          { onClick: this.displayHome, className: 'brand-logo' },
+	          'minibook'
+	        ),
+	        adminControl,
+	        React.createElement(NavBarSearch, null),
+	        React.createElement(
+	          'ul',
+	          { className: 'hide-on-med-and-down', style: { position: "absolute", top: 0, right: 0 } },
+	          React.createElement(
+	            'li',
+	            null,
+	            React.createElement(
+	              'a',
+	              { onClick: this.displayProfile },
+	              React.createElement('img', { src: url, alt: '', className: 'navbar-avatar circle' }),
+	              name
+	            )
+	          ),
+	          React.createElement(
+	            'li',
+	            null,
+	            React.createElement(
+	              'a',
+	              { onClick: this.props.openChat, href: '#' },
+	              'test chat'
+	            )
+	          ),
+	          React.createElement(
+	            'li',
+	            { style: { position: "relative" } },
+	            React.createElement(
+	              'a',
+	              null,
+	              ' ',
+	              React.createElement(
+	                'i',
+	                { onClick: this.showRequests, className: 'material-icons' },
+	                'group'
+	              ),
+	              React.createElement(
+	                'div',
+	                { style: display, className: 'requestsBadge' },
+	                this.requests.length
+	              )
+	            )
+	          ),
+	          React.createElement(
+	            'li',
+	            null,
+	            React.createElement(
+	              'a',
+	              { onClick: this.displayInbox },
+	              React.createElement(
+	                'i',
+	                { className: 'material-icons' },
+	                'email'
+	              )
+	            )
+	          ),
+	          React.createElement(
+	            'li',
+	            null,
+	            React.createElement(
+	              'a',
+	              { onClick: this.logout },
+	              React.createElement(
+	                'i',
+	                { className: 'material-icons' },
+	                'exit_to_app'
+	              )
+	            )
+	          )
+	        ),
+	        requestsList
+	      );
+	    } else {
+	      components = React.createElement(
+	        'div',
+	        { className: 'center' },
+	        React.createElement(
+	          'a',
+	          { onClick: this.displayHome, className: 'brand-logo' },
+	          'minibook'
+	        )
+	      );
+	    }
 
 	    return React.createElement(
 	      'div',
@@ -874,81 +954,9 @@
 	        React.createElement(
 	          'div',
 	          { className: 'nav-wrapper' },
-	          React.createElement(
-	            'div',
-	            { className: 'center' },
-	            React.createElement(
-	              'a',
-	              { onClick: this.displayHome, className: 'brand-logo' },
-	              'minibook'
-	            ),
-	            React.createElement(NavBarSearch, null),
-	            React.createElement(
-	              'ul',
-	              { className: 'hide-on-med-and-down', style: { position: "absolute", top: 0, right: 0 } },
-	              React.createElement(
-	                'li',
-	                null,
-	                React.createElement(
-	                  'a',
-	                  { onClick: this.logout },
-	                  'logout'
-	                )
-	              ),
-	              React.createElement(
-	                'li',
-	                null,
-	                React.createElement(
-	                  'a',
-	                  { onClick: this.props.openChat, href: '#' },
-	                  'test chat'
-	                )
-	              ),
-	              React.createElement(
-	                'li',
-	                null,
-	                React.createElement(
-	                  'a',
-	                  { onClick: this.displayProfile },
-	                  'Mon profil'
-	                )
-	              ),
-	              React.createElement(
-	                'li',
-	                { style: { position: "relative" } },
-	                React.createElement(
-	                  'a',
-	                  null,
-	                  React.createElement(
-	                    'i',
-	                    { onClick: this.showRequests, className: 'material-icons' },
-	                    'group'
-	                  ),
-	                  React.createElement(
-	                    'div',
-	                    { style: display, className: 'requestsBadge' },
-	                    this.requests.length
-	                  )
-	                )
-	              ),
-	              React.createElement(
-	                'li',
-	                null,
-	                React.createElement(
-	                  'a',
-	                  { onClick: this.displayInbox },
-	                  React.createElement(
-	                    'i',
-	                    { className: 'material-icons' },
-	                    'email'
-	                  )
-	                )
-	              )
-	            )
-	          )
+	          components
 	        )
-	      ),
-	      requestsList
+	      )
 	    );
 	  }
 	});
@@ -956,14 +964,14 @@
 	module.exports = NavBar;
 
 /***/ },
-/* 17 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
-	var UserService = __webpack_require__(18);
-	var NavBarSearchItem = __webpack_require__(19);
+	var UserService = __webpack_require__(17);
+	var NavBarSearchItem = __webpack_require__(18);
 
 	var NavBarSearch = React.createClass({
 	  displayName: "NavBarSearch",
@@ -1026,7 +1034,7 @@
 	module.exports = NavBarSearch;
 
 /***/ },
-/* 18 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1135,7 +1143,11 @@
 	            data: payload,
 	            success: function success(data, status) {
 
-	                if (callback) callback(data);
+	                if (data.error) {
+	                    Materialize.toast(data.error, 3000, 'toastError');
+	                } else {
+	                    if (callback) callback(data);
+	                }
 	            },
 	            error: function error(jqXHR, status, _error2) {
 	                console.log("find user by id error");
@@ -1148,13 +1160,13 @@
 	module.exports = UserService;
 
 /***/ },
-/* 19 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
-	var UserService = __webpack_require__(18);
+	var UserService = __webpack_require__(17);
 
 	var NavBarSearchItem = React.createClass({
 	  displayName: "NavBarSearchItem",
@@ -1190,13 +1202,13 @@
 	module.exports = NavBarSearchItem;
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var UserService = __webpack_require__(18);
+	var UserService = __webpack_require__(17);
 
 	var NavBarRequests = React.createClass({
 	    displayName: 'NavBarRequests',
@@ -1267,6 +1279,79 @@
 	});
 
 	module.exports = NavBarRequests;
+
+/***/ },
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var NavBar = __webpack_require__(15);
+	var Footer = __webpack_require__(21);
+	var FriendsGrid = __webpack_require__(22);
+	var UserService = __webpack_require__(17);
+
+	var Chat = __webpack_require__(24);
+
+	var Home = React.createClass({
+	  displayName: 'Home',
+	  getInitialState: function getInitialState() {
+	    return {
+	      chat: null,
+	      user: this.props.user
+	    };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.setState({
+	      user: nextProps.user
+	    });
+	  },
+	  componentDidMount: function componentDidMount() {
+	    // this.getUser();
+	  },
+	  refreshState: function refreshState(stateProperty) {
+	    switch (stateProperty) {
+
+	      case 'user':
+	        this.getUser();
+
+	    }
+	  },
+	  getUser: function getUser() {
+	    var self = this;
+	    UserService.get(localStorage.getItem('userId'), function (user) {
+	      self.setState({
+	        user: user
+	      });
+	    });
+	  },
+	  openChat: function openChat() {
+	    this.setState({
+	      chat: true
+	    });
+	  },
+	  closeChat: function closeChat() {
+	    this.setState({
+	      chat: null
+	    });
+	  },
+	  render: function render() {
+
+	    var chat;
+
+	    if (this.state.chat) chat = React.createElement(Chat, { name: 'Chuck Norris', closeChat: this.closeChat });else chat = React.createElement('div', null);
+
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(FriendsGrid, { user: this.state.user }),
+	      chat
+	    );
+	  }
+	});
+
+	module.exports = Home;
 
 /***/ },
 /* 21 */
@@ -1384,7 +1469,7 @@
 
 	var React = __webpack_require__(3);
 	var FriendBox = __webpack_require__(23);
-	var UserService = __webpack_require__(18);
+	var UserService = __webpack_require__(17);
 
 	var FriendBoxContainer = React.createClass({
 	  displayName: 'FriendBoxContainer',
@@ -1619,7 +1704,7 @@
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(16);
+	var NavBar = __webpack_require__(15);
 	var Footer = __webpack_require__(21);
 	var PostInput = __webpack_require__(27);
 	var Wall = __webpack_require__(28);
@@ -1627,7 +1712,7 @@
 	var ProfileData = __webpack_require__(34);
 	var config = __webpack_require__(11);
 	var PostsService = __webpack_require__(36);
-	var UserService = __webpack_require__(18);
+	var UserService = __webpack_require__(17);
 
 	var ToolBar = __webpack_require__(37);
 
@@ -1798,7 +1883,6 @@
 	    return React.createElement(
 	      'div',
 	      { id: 'userProfile' },
-	      React.createElement(NavBar, null),
 	      React.createElement(
 	        'div',
 	        { className: 'parallax-container' },
@@ -2405,28 +2489,110 @@
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(16);
+	var NavBar = __webpack_require__(15);
 	var MessageList = __webpack_require__(39);
-	var Pagination = __webpack_require__(42);
+	var MessageForm = __webpack_require__(42);
+	var Pagination = __webpack_require__(44);
+	var MessageService = __webpack_require__(43);
 
 	var Inbox = React.createClass({
 	  displayName: 'Inbox',
 	  getInitialState: function getInitialState() {
-	    return {};
+	    return {
+	      user: this.props.user,
+	      messages: [],
+	      showForm: false
+	    };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.setState({
+	      user: nextProps.user
+	    });
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.fetchMessages();
+	  },
+	  fetchMessages: function fetchMessages() {
+
+	    var self = this;
+	    MessageService.getInbox(function (inbox) {
+	      if (inbox) {
+
+	        console.log(inbox);
+	        self.setState({
+	          messages: inbox.messages
+	        });
+	      }
+	    });
+	  },
+	  displayMessageForm: function displayMessageForm() {
+
+	    var displayToggle = this.state.showForm;
+
+	    this.setState({
+	      showForm: !displayToggle
+	    });
+	  },
+	  readMessage: function readMessage(id) {
+
+	    var self = this;
+	    var messages = this.state.messages;
+
+	    MessageService.readMessage(id, this.state.user._id, function () {
+
+	      for (var i = 0; i < messages.length; i++) {
+	        if (messages[i]._id == id) {
+	          messages[i].status = 'read';
+	          break;
+	        }
+	      }
+
+	      self.setState({
+	        messages: messages
+	      });
+	    });
 	  },
 	  render: function render() {
 
-	    var messages = [{ author: "ZLatan", body: "I'm looking for a new team, call me!", object: "The Legend", date: 1460887462 }, { author: "Jack Bauer", body: "Sir, you have to save the President !", object: "2 hours left...", date: 1433412262 }, { author: "Mickael Jackson", body: "Aouh !", object: "Black or White ?", date: 1424257462 }];
+	    var displayedComponent = React.createElement('div', null);
+	    var messages = this.state.messages;
+	    var buttonLabel = void 0;
+
+	    if (this.state.showForm) {
+	      buttonLabel = "Annuler";
+
+	      displayedComponent = React.createElement(MessageForm, { users: this.state.user.friends });
+	    } else {
+	      buttonLabel = "Nouveau";
+
+	      displayedComponent = React.createElement(MessageList, { messages: messages, readMessage: this.readMessage });
+	    }
 
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(NavBar, null),
 	      React.createElement(
 	        'div',
 	        { className: 'container' },
-	        React.createElement(MessageList, { messages: messages }),
-	        React.createElement(Pagination, null)
+	        React.createElement(
+	          'div',
+	          { className: 'row', style: { marginTop: "50px" } },
+	          React.createElement(
+	            'div',
+	            { className: 'col s2 offset-s10' },
+	            React.createElement(
+	              'a',
+	              { className: 'waves-effect waves-light btn green accent-4', onClick: this.displayMessageForm },
+	              React.createElement(
+	                'i',
+	                { className: 'material-icons left' },
+	                'mode_edit'
+	              ),
+	              buttonLabel
+	            )
+	          )
+	        ),
+	        displayedComponent
 	      )
 	    );
 	  }
@@ -2439,6 +2605,8 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var React = __webpack_require__(3);
 	var MessageLine = __webpack_require__(40);
@@ -2455,8 +2623,11 @@
 	  },
 	  render: function render() {
 
+	    console.log(this.props.messages);
+
+	    var self = this;
 	    var messageLines = this.props.messages.map(function (message, i) {
-	      return React.createElement(MessageLine, { author: message.author, body: message.body, object: message.object, date: message.date, key: i });
+	      return React.createElement(MessageLine, _extends({}, message, { key: i, readMessage: self.props.readMessage }));
 	    });
 
 	    return React.createElement(
@@ -2487,33 +2658,47 @@
 	  getInitialState: function getInitialState() {
 	    return {};
 	  },
+	  displayMessage: function displayMessage(e) {
+	    console.log(this.props);
+
+	    if (this.props.status == "not_read") {
+	      this.props.readMessage(this.props._id);
+	    }
+	  },
 	  render: function render() {
 
-	    var date = moment(this.props.date * 1000).format("MMMM Do");
+	    var date = moment(this.props.created_at).format("MMMM Do");
+
+	    var fullname = "";
+	    if (this.props.created_by) fullname = this.props.created_by.firstname + " " + this.props.created_by.lastname;
+
+	    var icon = this.props.status == "not_read" ? "whatshot" : "label";
+
+	    var backgroundColor = this.props.status == "not_read" ? "#fff" : "#eee";
 
 	    return React.createElement(
 	      'li',
 	      null,
 	      React.createElement(
 	        'div',
-	        { className: 'collapsible-header' },
+	        { className: 'collapsible-header', style: { backgroundColor: backgroundColor }, onClick: this.displayMessage },
 	        React.createElement(
 	          'div',
 	          { className: 'row' },
 	          React.createElement(
 	            'i',
 	            { className: 'material-icons' },
-	            'whatshot'
+	            icon
 	          ),
 	          React.createElement(
 	            'span',
 	            { className: 'col s2', style: { fontWeight: "bold" } },
-	            this.props.author
+	            fullname
 	          ),
 	          React.createElement(
 	            'span',
 	            { className: 'col s4' },
-	            this.props.object
+	            this.props.subject
 	          ),
 	          React.createElement(
 	            'span',
@@ -2545,6 +2730,204 @@
 
 /***/ },
 /* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var MessageService = __webpack_require__(43);
+
+	var MessageForm = React.createClass({
+	  displayName: 'MessageForm',
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  componentDidMount: function componentDidMount() {
+	    $('select').material_select();
+	  },
+	  submitMessage: function submitMessage() {
+
+	    var self = this;
+	    var selectedUser = this.refs["userSelect"].value;
+	    var subject = this.refs["messageSubject"].value;
+	    var text = this.refs["messageBody"].value;
+
+	    console.log(selectedUser);
+
+	    var newMessage = {
+	      subject: subject,
+	      body: text,
+	      created_by: {
+	        userId: localStorage.getItem('userId')
+	      }
+	    };
+
+	    MessageService.sendMessage(newMessage, selectedUser, function (result) {
+	      Materialize.toast("Ton message a été envoyé !", 2000, 'toastSuccess');
+	    });
+	  },
+	  render: function render() {
+
+	    var options = this.props.users.map(function (obj, index) {
+	      var name = obj.user.firstname + " " + obj.user.lastname;
+	      var url = obj.user.avatar ? obj.user.avatar.replace("/upload/", "/upload/w_42,h_42,c_fill/") : "";
+	      return React.createElement(
+	        'option',
+	        { value: obj.user._id, key: index, 'data-icon': url, className: 'left circle' },
+	        name
+	      );
+	    });
+
+	    return React.createElement(
+	      'div',
+	      { id: 'inboxForm', className: 'row card-panel hoverable white' },
+	      React.createElement(
+	        'form',
+	        { className: 'col s12' },
+	        React.createElement(
+	          'div',
+	          { className: 'row' },
+	          React.createElement(
+	            'div',
+	            { className: 'input-field col s6' },
+	            React.createElement(
+	              'select',
+	              { defaultValue: 'default', ref: 'userSelect' },
+	              React.createElement(
+	                'option',
+	                { value: 'default', disabled: true },
+	                'Destinataire'
+	              ),
+	              options
+	            )
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'row' },
+	          React.createElement(
+	            'div',
+	            { className: 'input-field col s6' },
+	            React.createElement('input', { id: 'messageSubject', type: 'text', className: 'validate', ref: 'messageSubject' }),
+	            React.createElement(
+	              'label',
+	              { 'for': 'messageSubject' },
+	              'Objet du message'
+	            )
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'row' },
+	          React.createElement(
+	            'div',
+	            { className: 'input-field col s10' },
+	            React.createElement('textarea', { id: 'textarea1', className: 'materialize-textarea', ref: 'messageBody' }),
+	            React.createElement(
+	              'label',
+	              { 'for': 'textarea1' },
+	              'Ton message...'
+	            )
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'row' },
+	          React.createElement(
+	            'div',
+	            { className: 'col s2 offset-s10' },
+	            React.createElement(
+	              'a',
+	              { className: 'waves-effect waves-light btn green accent-4', onClick: this.submitMessage },
+	              React.createElement(
+	                'i',
+	                { className: 'material-icons left' },
+	                'done'
+	              ),
+	              'envoyer'
+	            )
+	          )
+	        )
+	      )
+	    );
+	  }
+	});
+
+	module.exports = MessageForm;
+
+/***/ },
+/* 43 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// var $ = require('jquery');
+	var config = __webpack_require__(11);
+
+	var MessageService = {
+	    getInbox: function getInbox(callback) {
+
+	        var payload = {
+	            sessionId: localStorage.getItem("sessionId")
+	        };
+
+	        this.sendHTTPRequest(config[process.env.NODE_ENV].api + '/messages/inbox', "GET", payload, callback);
+	    },
+	    sendMessage: function sendMessage(newMessage, target, callback) {
+
+	        var payload = {
+	            message: newMessage,
+	            sessionId: localStorage.getItem("sessionId"),
+	            target: target
+	        };
+
+	        this.sendHTTPRequest(config[process.env.NODE_ENV].api + '/messages/new', "POST", JSON.stringify(payload), callback);
+	    },
+	    readMessage: function readMessage(messageId, userId, callback) {
+
+	        var payload = {
+	            messageId: messageId,
+	            userId: userId,
+	            sessionId: localStorage.getItem("sessionId")
+	        };
+
+	        this.sendHTTPRequest(config[process.env.NODE_ENV].api + '/messages/read', "POST", JSON.stringify(payload), callback);
+	    },
+
+
+	    sendHTTPRequest: function sendHTTPRequest(url, method, payload, callback) {
+
+	        $.ajax({
+	            type: method,
+	            url: url,
+	            data: payload,
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+
+	                if (data) {
+
+	                    if (data.error) {
+	                        Materialize.toast(data.error, 3000, 'toastError');
+	                    } else {
+	                        if (callback) callback(data);
+	                    }
+	                } else {
+	                    Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	                }
+	            },
+	            error: function error(jqXHR, status, _error) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    }
+
+	};
+
+	module.exports = MessageService;
+
+/***/ },
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2639,16 +3022,16 @@
 	module.exports = Pagination;
 
 /***/ },
-/* 43 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var NavBar = __webpack_require__(16);
-	var UserList = __webpack_require__(44);
-	var Stats = __webpack_require__(46);
-	var UserService = __webpack_require__(18);
+	var NavBar = __webpack_require__(15);
+	var UserList = __webpack_require__(46);
+	var Stats = __webpack_require__(48);
+	var UserService = __webpack_require__(17);
 
 	var Admin = React.createClass({
 	  displayName: 'Admin',
@@ -2702,7 +3085,6 @@
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(NavBar, null),
 	      React.createElement(
 	        'div',
 	        { className: 'container' },
@@ -2782,7 +3164,7 @@
 	module.exports = Admin;
 
 /***/ },
-/* 44 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2790,7 +3172,7 @@
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var React = __webpack_require__(3);
-	var UserListItem = __webpack_require__(45);
+	var UserListItem = __webpack_require__(47);
 
 	var UserList = React.createClass({
 	  displayName: 'UserList',
@@ -2825,7 +3207,7 @@
 	module.exports = UserList;
 
 /***/ },
-/* 45 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2859,7 +3241,7 @@
 	        receivedInvitesNumber = 0;
 
 	    for (var i = 0; i < friendships.length; i++) {
-	      if (friendships[i].status == "accepted") friendsNumber++;else if (friendships[i].status == "pending") receivedInvitesNumber++;else if (friendships[i].status == "sentRequest") receivedInvitesNumber++;
+	      if (friendships[i].status == "accepted") friendsNumber++;else if (friendships[i].status == "pending") receivedInvitesNumber++;else if (friendships[i].status == "sentRequest") sentInvitesNumber++;
 	    }
 
 	    var cssClass = "collection-item avatar";
@@ -2928,7 +3310,7 @@
 	module.exports = UserListItem;
 
 /***/ },
-/* 46 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2957,7 +3339,7 @@
 	module.exports = Stats;
 
 /***/ },
-/* 47 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2978,6 +3360,7 @@
 	    var self = this;
 
 	    Auth.logout(function () {
+	      self.props.destroyUser();
 	      self.setState({
 	        loggedOut: true
 	      });
@@ -3017,7 +3400,7 @@
 	module.exports = Logout;
 
 /***/ },
-/* 48 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3032,6 +3415,9 @@
 	    return {};
 	  },
 	  componentWillMount: function componentWillMount() {},
+	  goHome: function goHome() {
+	    browserHistory.push('/home');
+	  },
 	  render: function render() {
 
 	    return React.createElement(
@@ -3054,7 +3440,7 @@
 	          { className: 'col s1' },
 	          React.createElement(
 	            'a',
-	            { className: 'waves-effect waves-light btn col s12 green accent-4', href: '/' },
+	            { className: 'waves-effect waves-light btn col s12 green accent-4', onClick: this.goHome },
 	            'Accueil'
 	          )
 	        )
