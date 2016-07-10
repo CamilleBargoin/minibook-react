@@ -30,6 +30,19 @@ var MessageService = {
 
 
 
+    readMessage(messageId, userId, callback) {
+
+      var payload = {
+            messageId: messageId,
+            userId: userId,
+            sessionId: localStorage.getItem("sessionId")
+        };
+
+        this.sendHTTPRequest(config[process.env.NODE_ENV].api + '/messages/read', "POST", JSON.stringify(payload), callback);
+    },
+
+
+
     sendHTTPRequest: function(url, method, payload, callback) {
 
         $.ajax({

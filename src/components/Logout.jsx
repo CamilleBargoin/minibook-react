@@ -16,6 +16,7 @@ var Logout = React.createClass({
       const self = this;
 
       Auth.logout(function() {
+        self.props.destroyUser();
         self.setState({
           loggedOut: true
         });

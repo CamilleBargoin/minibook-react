@@ -17,6 +17,12 @@ var Home = React.createClass({
     };
   },
 
+  componentWillReceiveProps(nextProps) {
+      this.setState({
+        user: nextProps.user
+      }); 
+  },
+
 
   componentDidMount() {
       // this.getUser();

@@ -13,6 +13,10 @@ var Logout = React.createClass({
 
   },
 
+  goHome() {
+    browserHistory.push('/home');
+  },
+
   
   render() {
 
@@ -24,7 +28,7 @@ var Logout = React.createClass({
             <p style={{color: "white"}}>Désolé, Vous n'avez pas accès à cette partie du site :'(</p>
           </div>
           <div className="col s1">
-            <a className="waves-effect waves-light btn col s12 green accent-4" href="/">Accueil</a>
+            <a className="waves-effect waves-light btn col s12 green accent-4" onClick={this.goHome}>Accueil</a>
           </div>
         </div>
       </div>

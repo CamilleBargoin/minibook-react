@@ -50,7 +50,27 @@ var Inbox = React.createClass({
 
   },
 
-  
+  readMessage(id) {
+
+    const self = this;
+    var messages = this.state.messages;
+
+    MessageService.readMessage(id, this.state.user._id, function() {
+
+      for (var i = 0; i < messages.length; i++) {
+        if (messages[i]._id == id) {
+            messages[i].status = 'read';
+            break;
+          }
+      }
+
+      self.setState({
+        messages: messages
+      });
+    });
+
+
+  },
 
   render() {
 
@@ -67,19 +87,7 @@ var Inbox = React.createClass({
     else {
       buttonLabel = "Nouveau";
 
-      // if (messages.length ==0) {
-      //   messages = [
-      //     {author: "ZLatan", body: "I'm looking for a new team, call me!", object: "The Legend", date: 1460887462},
-      //     {author: "Jack Bauer", body: "Sir, you have to save the President !", object: "2 hours left...", date: 1433412262 },
-      //     {author: "Mickael Jackson", body: "Aouh !", object: "Black or White ?", date: 1424257462 }
-      //   ];
-
-
-
-
-      // }
-
-        displayedComponent =  <MessageList messages={messages} />;
+        displayedComponent =  <MessageList messages={messages} readMessage={this.readMessage}/>;
     }
 
 

@@ -30,13 +30,15 @@ var UserListItem = React.createClass({
     const friendships = this.props.friends;
     let friendsNumber = 0, sentInvitesNumber = 0, receivedInvitesNumber = 0; 
 
+
+
     for (var i = 0; i < friendships.length; i++) {
       if (friendships[i].status == "accepted")
         friendsNumber ++;
       else if (friendships[i].status == "pending")
         receivedInvitesNumber ++;
       else if (friendships[i].status == "sentRequest")
-        receivedInvitesNumber ++;
+        sentInvitesNumber ++;
     }
 
 

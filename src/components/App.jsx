@@ -18,12 +18,21 @@ var App = React.createClass({
   },
 
   getUser() {
+
+    console.log("GET USER");
+
       const self = this;
       UserService.get(localStorage.getItem('userId'), function(user) {
           self.setState({
             user: user
           });
       });
+  },
+
+  destroyUser() {
+    this.setState({
+      user: {}
+    });
   },
   
   render() {
@@ -32,7 +41,7 @@ var App = React.createClass({
       <div style={{height:"100%"}}>
         <NavBar user={this.state.user}/>
 
-        {React.cloneElement(this.props.children, {user: this.state.user})}
+        {React.cloneElement(this.props.children, {user: this.state.user, refreshUser: this.getUser, destroyUser: this.destroyUser})}
         
       </div>
     );

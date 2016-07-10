@@ -35,9 +35,6 @@ var MessageForm = React.createClass({
     MessageService.sendMessage(newMessage, selectedUser, function(result) {
       Materialize.toast("Ton message a été envoyé !", 2000, 'toastSuccess');
     });
-
-
-
   },
   
   render() {

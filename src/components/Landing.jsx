@@ -25,11 +25,13 @@ var Landing = React.createClass({
 
   render() {
 
+    console.log(this.props);
+
     var box;
     if (this.state.showLogin) {
       box = (
         <div>
-          <LoginBox />
+          <LoginBox refreshUser = {this.props.refreshUser}/>
           <p>Pas encore membre? <a className="changeBox" onClick={this.showRegisterBox}>inscris-toi !</a></p>
         </div>
       );

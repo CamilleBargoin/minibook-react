@@ -59,7 +59,6 @@ var Admin = React.createClass({
 
     return (
       <div>
-        <NavBar />
         <div className="container">
           <div id="adminTabs" className="row">
             <div className="col s12">
