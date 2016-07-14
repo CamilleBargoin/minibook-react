@@ -36,10 +36,15 @@ var WallPost = React.createClass({
     const author = post.created_by;
     const authorFullname = (author) ? author.firstname + " " + author.lastname : null;
 
+    let avatar = "";
+    if (author && author.avatar) {
+      avatar = author.avatar.replace("/upload/", "/upload/w_60,h_60,c_fill/");
+    }
+
     return (
         <div style={{margin: "50px 0"}} className="wallPost row">
           <div className="col l1 offset-l2 m1 offset-m1 s1">
-            <div style={{height: "60px", width: "60px", marginTop: "7px"}} className="blue tooltipped hoverable" data-position="left" data-delay="50" data-tooltip={authorFullname}>
+            <div style={{height: "60px", width: "60px", marginTop: "7px", background: "url(" + avatar + ")"}} className="blue tooltipped hoverable" data-position="left" data-delay="50" data-tooltip={authorFullname}>
             </div>
           </div>
           <div className="grey lighten-5 card-panel hoverable col l6 m8 offset-m1 s10 offset-s1">

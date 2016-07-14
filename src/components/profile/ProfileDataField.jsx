@@ -48,8 +48,14 @@ var ProfileDataField = React.createClass({
       );
     }
 
+    let className = "collection-item row";
+
+    if (this.props.updateProfile) {
+      className += " personalDataField";
+    }
+
     return (
-        <li className="collection-item row">
+        <li className={className}>
           <p className="col s5">{this.props.label}</p>
           <p className="col s5">{this.props.value}</p>
           <a className="btn-floating btn-medium waves-effect waves-light green accent-4 right" onClick={this.edit}><i className="material-icons">edit</i></a>

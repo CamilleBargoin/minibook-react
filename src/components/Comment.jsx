@@ -11,8 +11,6 @@ var Comment = React.createClass({
   
   render() {
 
-    console.log(this.props);
-
     const comment = this.props.comment;
     const author = comment.created_by;
     const authorFullname = (author) ? author.firstname + " " + author.lastname : null;

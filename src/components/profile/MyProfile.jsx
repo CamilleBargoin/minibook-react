@@ -13,7 +13,7 @@ var UserService = require('../../services/UserService.jsx');
 var ToolBar = require("./ToolBar.jsx");
 
 
-var UserProfile = React.createClass({
+var MyProfile = React.createClass({
 
   getInitialState() {
 
@@ -22,8 +22,7 @@ var UserProfile = React.createClass({
     return {
       display: 0,
       user: {},
-      wall: [],
-      quote: ""
+      wall: []
     };
   },
 
@@ -50,7 +49,8 @@ var UserProfile = React.createClass({
       });
 
       var self = this;
-      this.findUserWallById(this.props.params.id, function(wall) {
+
+      this.findUserWallById(localStorage.getItem('userId'), function(wall) {
 
           self.setState({
             user: wall.user,
@@ -130,11 +130,10 @@ var UserProfile = React.createClass({
     };
 
     PostsService.create(newPost, user._id, function(result) {
-
+      console.log("posts service callback");
       self.setState({
         wall: result.data.posts
       });
-      
     });
 
   },
@@ -154,9 +153,10 @@ var UserProfile = React.createClass({
 
 
     PostsService.addComment(newComment, postId, function(result) {
-        self.setState({
-          wall: result.data.posts
-        });
+
+      self.setState({
+        wall: result.data.posts
+      });
     });
 
   },
@@ -185,7 +185,7 @@ var UserProfile = React.createClass({
 
   render() {
 
-    console.log("profile render");
+    console.log("my profile render");
 
     var displayContent;
 
@@ -194,8 +194,10 @@ var UserProfile = React.createClass({
     else if (this.state.display == 1)
       displayContent = <FriendsList />;
     else if (this.state.display == 2)
-      displayContent = <ProfileData profile={this.state.user} />;
+      displayContent = <ProfileData profile={this.state.user} updateProfile={this.updateProfile} />;
 
+
+    console.log(this.state.user);
 
     let avatar =  <i className="large material-icons" >add</i>;
     if (this.state.user.avatar) {
@@ -214,6 +216,7 @@ var UserProfile = React.createClass({
             </div>
             <div id="profilePicture" className="hoverable" onClick={this.selectAvatar} >
               {avatar}
+            
             </div>
             <div id="profileHeadData">
               <h1>{this.state.user.firstname + " " +  this.state.user.lastname}</h1>
@@ -235,4 +238,4 @@ var UserProfile = React.createClass({
 
 });
 
-module.exports = UserProfile;
+module.exports = MyProfile;

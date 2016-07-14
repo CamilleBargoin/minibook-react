@@ -74,7 +74,7 @@ var NavBar = React.createClass({
   },
 
   displayProfile() {
-    browserHistory.push("/profile/" + localStorage.getItem('userId'));
+    browserHistory.push("/profile/");
   },
   
   displayInbox() {

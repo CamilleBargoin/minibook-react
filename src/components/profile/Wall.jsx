@@ -14,7 +14,7 @@ var Wall = React.createClass({
   render() {
     
     var posts = this.props.posts;
-    posts.propAsort("created_at");
+    // posts.propAsort("created_at");
 
     const self = this;
     const wallPosts = this.props.posts.map(function(post, i) {

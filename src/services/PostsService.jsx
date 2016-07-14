@@ -52,7 +52,7 @@ var PostsService = {
                 Materialize.toast(data.error, 3000, 'toastError');
              }
              else {                    
-                callback();
+                callback(data);
              }
             },
             error: function(jqXHR, status, error) {
@@ -84,7 +84,7 @@ var PostsService = {
                 Materialize.toast(data.error, 3000, 'toastError');
              }
              else {                    
-                callback();
+                callback(data);
              }
             },
             error: function(jqXHR, status, error) {
