@@ -5,6 +5,6 @@ module.exports = {
     },
     "development": {
         "api": "http://localhost:3000",
-        "websocket": "http://localhost:1337"
+        "websocket": "http://localhost:3001"
     }
 };

@@ -1,6 +1,8 @@
 var React = require('react');
 var Auth = require('../auth.js');
 var browserHistory = require('react-router').browserHistory;
+var config = require('../../config.js');
+
 
 var LoginBox = React.createClass({
   socket: null,
@@ -21,7 +23,7 @@ var LoginBox = React.createClass({
 console.log("login action");
 
     const self = this;
-this.socket = io("http://localhost:1337");
+this.socket = io(config[process.env.NODE_ENV].websocket);
     Auth.login(this.state.email, this.state.password, function() {
       console.log(window.document.cookie);
 console.log(self.props);

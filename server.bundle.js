@@ -320,6 +320,7 @@
 	var React = __webpack_require__(3);
 	var Auth = __webpack_require__(9);
 	var browserHistory = __webpack_require__(5).browserHistory;
+	var config = __webpack_require__(11);
 
 	var LoginBox = React.createClass({
 	  displayName: 'LoginBox',
@@ -340,7 +341,7 @@
 	    console.log("login action");
 
 	    var self = this;
-	    this.socket = io("http://localhost:1337");
+	    this.socket = io(config[process.env.NODE_ENV].websocket);
 	    Auth.login(this.state.email, this.state.password, function () {
 	      console.log(window.document.cookie);
 	      console.log(self.props);
@@ -545,7 +546,7 @@
 	    },
 	    "development": {
 	        "api": "http://localhost:3000",
-	        "websocket": "http://localhost:1337"
+	        "websocket": "http://localhost:3001"
 	    }
 	};
 
