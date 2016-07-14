@@ -14,12 +14,18 @@ var NavBarSearch = React.createClass({
   componentDidMount() {
       const self =this;
 
-      $(window).click(function() {
+      $(window).on("click", function() {
+        if (self.state) {
           self.setState({
             suggestions: []
           });
+        }
       });  
   },  
+
+  componentWillUnmount() {
+      $(window).off("click");  
+  },
 
   onChange(e) {
     const that = this;

@@ -3,7 +3,7 @@ var FriendBox = require('../FriendBox.jsx');
 var UserService = require('../../services/UserService.jsx');
 
 
-var FriendBoxContainer = React.createClass({
+var FriendGrid = React.createClass({
 
   socket: null,
 
@@ -23,20 +23,31 @@ var FriendBoxContainer = React.createClass({
     
   },
 
+  componentWillUnmount() {
+      this.socket.off('user login');
+      this.socket.off('user logout');
+      this.socket.off('new friend');
+  },
+
   componentWillReceiveProps(nextProps) {
 
       if (nextProps.user && nextProps.user._id) {
 
         this.setState({
           friendships: nextProps.user.friends || []
+        }, function() {
+
+
+          this.socket = io("http://localhost:1337");
+          this.socket.emit('room', nextProps.user._id);
+
+          this.socket.on('user login', this.updateFriendOnlineStatus);
+          this.socket.on('user logout', this.updateFriendOnlineStatus);
+          this.socket.on('new friend', this.updateFriendList);      
+
+          
         });  
 
-        this.socket = io("http://localhost:1337");
-        this.socket.emit('room', nextProps.user._id);
-
-        this.socket.on('user login', this.updateFriendOnlineStatus);
-        this.socket.on('user logout', this.updateFriendOnlineStatus);
-        this.socket.on('new friend', this.updateFriendList);      
 
         
       }
@@ -92,4 +103,4 @@ var FriendBoxContainer = React.createClass({
   }
 });
 
-module.exports = FriendBoxContainer;
+module.exports = FriendGrid;

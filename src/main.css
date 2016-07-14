@@ -119,12 +119,20 @@ blockquote {
 
 .requests-item {
     position: relative;
+    width: 100%;
+    color: #202020;
+    text-align: left;
 }
 
 .requests-item a {
+    margin: 0;
     position: absolute;
     right: 5px;
-    top: 2px;
+    top: 4px;
+}
+
+.requests-item a i {
+    line-height: 37px;
 }
 
 .navbar-avatar {
