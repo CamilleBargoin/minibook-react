@@ -11,7 +11,15 @@ var NavBarSearch = React.createClass({
     };
   },
 
-  
+  componentDidMount() {
+      const self =this;
+
+      $(window).click(function() {
+          self.setState({
+            suggestions: []
+          });
+      });  
+  },  
 
   onChange(e) {
     const that = this;
@@ -44,14 +52,20 @@ var NavBarSearch = React.createClass({
     console.log(e.currentTarget);
   },
 
+  invite(user) {
+    UserService.sendInvite(user, function() {
+      Materialize.toast("Demande d'ami envoyée !", 3000, 'toastSuccess');
+    });
+
+
+  },
+
   render() {
 
-    const that = this;
+    const self = this;
     const displayUserSuggestions = (this.state.suggestions.length > 0) ? "block" : "none";
     const userSuggestions = this.state.suggestions.map(function(user, key) {
-      // return (<li className="collection-item"  onClick={that.selectUser} key={key}>{user.firstname} {user.lastname}</li>)
-    
-      return <NavBarSearchItem user={user} key={key} />
+      return <NavBarSearchItem user={user} invite={self.invite} key={key} />
     });
 
     return (

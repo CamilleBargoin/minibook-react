@@ -16,17 +16,17 @@ var AuthService = {
             success: function(data, status) {
 
               if (data.success) {
-                console.log("loggedIn success");
-                console.log(data);
+                // console.log("loggedIn success");
+                // console.log(data);
                 success();
                 }
               else {
-                console.log(data);
+                // console.log(data);
                 error();
               }
             },
             error: function(jqXHR, status, error) {
-              console.log("loggedIn error");
+              // console.log("loggedIn error");
               Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
               error();
             }
@@ -45,17 +45,17 @@ var AuthService = {
             success: function(data, status) {
 
               if (data.success) {
-                console.log("loggedIn success");
-                console.log(data);
+                // console.log("loggedIn success");
+                // console.log(data);
                 success();
                 }
               else {
-                console.log(data);
+                // console.log(data);
                 error();
               }
             },
             error: function(jqXHR, status, error) {
-              console.log("loggedIn error");
+              // console.log("loggedIn error");
               Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
               error();
             }
@@ -69,7 +69,7 @@ var AuthService = {
     login: function(email, password, callback) {
 
       if (Storage) {
-        console.log(config[process.env.NODE_ENV].api);
+        // console.log(config[process.env.NODE_ENV].api);
         $.ajax({
             type: 'POST',
             url: config[process.env.NODE_ENV].api + '/users/login',
@@ -81,7 +81,7 @@ var AuthService = {
 
 
              if (data.error) {
-                console.log(data.error);
+                // console.log(data.error);
                 Materialize.toast(data.error, 3000, 'toastError');
              }
              else {
@@ -105,7 +105,7 @@ var AuthService = {
 
     logout: function(callback) {
 
-      console.log("LOGOUT");
+      // console.log("LOGOUT");
 
       if (Storage) {
         $.ajax({
@@ -113,7 +113,7 @@ var AuthService = {
             url: config[process.env.NODE_ENV].api + '/users/logout',
             data: {sessionId: localStorage.getItem("sessionId")},
             success: function(data, status) {
-              console.log("logout success");
+              // console.log("logout success");
 
               if (data.success) {
                 localStorage.setItem("sessionId", "");
@@ -122,7 +122,7 @@ var AuthService = {
             
             },
             error: function(jqXHR, status, error) {
-              console.log("logout error");
+              // console.log("logout error");
               Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
             }
 

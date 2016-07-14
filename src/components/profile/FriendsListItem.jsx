@@ -1,4 +1,5 @@
 var React = require('react');
+var browserHistory = require('react-router').browserHistory;
 
 
 var FriendsListItem = React.createClass({
@@ -9,22 +10,30 @@ var FriendsListItem = React.createClass({
     };
   },
 
-  
+  displayProfile(e) {
+    browserHistory.push("/profile/" + this.props.user._id);
+  },
 
   render() {
+
+    console.log(this.props.user);
+
+    const user = this.props.user;
+    let avatar = "";
+
+    if (user.avatar)
+      avatar = user.avatar.replace("/upload/", "/upload/w_42,h_42,c_fill/");
+
     return (
       <li className="collection-item avatar">
-        <img src="http://lorempixel.com/42/42/people" alt="" className="circle" />
-        <span className="title">{this.props.name}</span>
-        <p>First Line <br/>
-           Second Line
-        </p>
-        <a href="#!" className="secondary-content"><i className="material-icons">send</i></a>
+        <img onClick={this.displayProfile} src={avatar} alt="" className="circle pointer" />
+        <span className="title">{user.firstname + " " + user.lastname}</span>
+        
+        <a onClick={this.displayProfile} className="secondary-content pointer"><i className="material-icons">send</i></a>
       </li>
           
     );
   }
-
 });
 
 module.exports = FriendsListItem;

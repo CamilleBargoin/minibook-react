@@ -9,16 +9,20 @@ var FriendsList = React.createClass({
     };
   },
 
-  
 
   render() {
+
+    const friendsListItem = this.props.friends.map(function(friendship, index) {
+      if( friendship.status == "accepted") {
+        return <FriendsListItem user={friendship.user} key={index}/>
+      }
+    });
+
+
     return (
       <div id="friendsList" className="container" >  
         <ul className="collection hoverable">
-          <FriendsListItem name="Chuck Norris" />
-          <FriendsListItem name="Jean-CLaude VanDamme" />
-          <FriendsListItem name="Steven Seagal" />
-          <FriendsListItem name="Kurt Russel" />
+          {friendsListItem}
         </ul>
       </div>
     );

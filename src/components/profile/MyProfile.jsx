@@ -192,7 +192,7 @@ var MyProfile = React.createClass({
     if (this.state.display === 0)
       displayContent = <Wall posts={this.state.wall} postComment={this.postComment}/>;
     else if (this.state.display == 1)
-      displayContent = <FriendsList />;
+      displayContent = <FriendsList friends={this.state.user.friends}/>;
     else if (this.state.display == 2)
       displayContent = <ProfileData profile={this.state.user} updateProfile={this.updateProfile} />;
 

@@ -5,6 +5,8 @@ var UserService = require('../../services/UserService.jsx');
 
 var FriendBoxContainer = React.createClass({
 
+  socket: null,
+
   getInitialState() {
     if (this.props.user) {
         return {
@@ -17,19 +19,58 @@ var FriendBoxContainer = React.createClass({
     }
   },
 
+  componentDidMount() {
+    
+  },
+
   componentWillReceiveProps(nextProps) {
-      this.setState({
-        friendships: nextProps.user.friends || []
-      });  
+
+      if (nextProps.user && nextProps.user._id) {
+
+        this.setState({
+          friendships: nextProps.user.friends || []
+        });  
+
+        this.socket = io("http://localhost:1337");
+        this.socket.emit('room', nextProps.user._id);
+
+        this.socket.on('user login', this.updateFriendOnlineStatus);
+        this.socket.on('user logout', this.updateFriendOnlineStatus);
+        this.socket.on('new friend', this.updateFriendList);      
+
+        
+      }
   },
 
   componentDidUpdate() {
       $('.friendBox.tooltipped').tooltip({delay: 50});    
   },
 
+  updateFriendOnlineStatus(data) {
+
+      var friendships = this.state.friendships;
+
+      var updatedFriendships = friendships.map(function(friendship, index) {
+        if (friendship.user._id == data._id)
+            friendship.user.online = data.online;
+
+          return friendship;
+      });
+
+      this.setState({
+        friendships:updatedFriendships
+      });
+
+  },
+
+  updateFriendList(data) {
+    console.log(data);
+      this.setState({
+        friendships: data.friends
+      });
+  },
+
   render() {
-
-
 
     var friendBoxes = this.state.friendships.map(function(friendship, i) {
       if (friendship.status == "accepted") {

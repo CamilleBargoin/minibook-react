@@ -157,10 +157,11 @@
 
 	var Home = __webpack_require__(20);
 	var UserProfile = __webpack_require__(26);
-	var Inbox = __webpack_require__(38);
-	var Admin = __webpack_require__(45);
-	var Logout = __webpack_require__(49);
-	var Forbidden = __webpack_require__(50);
+	var MyProfile = __webpack_require__(38);
+	var Inbox = __webpack_require__(39);
+	var Admin = __webpack_require__(46);
+	var Logout = __webpack_require__(50);
+	var Forbidden = __webpack_require__(51);
 
 	var NoMatch = React.createClass({
 	  displayName: 'NoMatch',
@@ -195,7 +196,7 @@
 	    { path: '/', component: App },
 	    React.createElement(IndexRoute, { component: Landing }),
 	    React.createElement(Route, { path: '/home', component: Home, onEnter: requireCredentials }),
-	    React.createElement(Route, { path: '/profile', component: UserProfile, onEnter: requireCredentials }),
+	    React.createElement(Route, { path: '/profile', component: MyProfile, onEnter: requireCredentials }),
 	    React.createElement(Route, { path: '/profile/:id', component: UserProfile, onEnter: requireCredentials }),
 	    React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireCredentials }),
 	    React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireAdminCredentials }),
@@ -700,6 +701,8 @@
 	  componentDidMount: function componentDidMount() {
 
 	    this.getUser();
+
+	    var socket = io("http://192.168.1.93:3000");
 	  },
 	  getUser: function getUser() {
 
@@ -816,7 +819,7 @@
 	    browserHistory.push('/logout');
 	  },
 	  displayProfile: function displayProfile() {
-	    browserHistory.push("/profile/" + localStorage.getItem('userId'));
+	    browserHistory.push("/profile/");
 	  },
 	  displayInbox: function displayInbox() {
 	    browserHistory.push("/inbox");
@@ -1725,7 +1728,8 @@
 	    return {
 	      display: 0,
 	      user: {},
-	      wall: []
+	      wall: [],
+	      quote: ""
 	    };
 	  },
 	  componentDidMount: function componentDidMount() {
@@ -1741,13 +1745,6 @@
 
 	    $('.cloudinary_fileupload').bind('cloudinarydone', function (e, data) {
 
-	      console.log(data.result);
-	      // let user = self.state.user;
-	      // user.avatar = data.result.secure_url;
-	      // self.setState({
-	      //   user: user
-	      // });
-
 	      self.updateProfile({
 	        label: "avatar",
 	        value: data.result.secure_url
@@ -1756,10 +1753,16 @@
 
 	    var self = this;
 	    this.findUserWallById(this.props.params.id, function (wall) {
-
+	      console.log(wall);
 	      self.setState({
 	        user: wall.user,
 	        wall: wall.posts
+	      });
+
+	      self.fetchRandomQuote(function (data) {
+	        if (data && data.quote) self.setState({
+	          quote: data.quote
+	        });
 	      });
 	    });
 	  },
@@ -1783,6 +1786,20 @@
 
 	    });
 	  },
+	  fetchRandomQuote: function fetchRandomQuote(callback) {
+
+	    $.ajax({
+	      method: "GET",
+	      url: config[process.env.NODE_ENV].api + '/quotes/random',
+	      success: function success(data, status) {
+	        callback(data);
+	      },
+	      error: function error(jqXHR, status, _error2) {
+	        Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	      }
+
+	    });
+	  },
 	  selectContent: function selectContent(index) {
 	    this.setState({
 	      display: index
@@ -1797,17 +1814,14 @@
 	    var newPost = {
 	      body: post,
 	      created_by: {
-	        userId: user._id
+	        userId: localStorage.getItem('userId')
 	      }
 	    };
 
 	    PostsService.create(newPost, user._id, function (result) {
-	      console.log("posts service callback");
-
-	      wall.unshift(newPost);
 
 	      self.setState({
-	        wall: wall
+	        wall: result.data.posts
 	      });
 	    });
 	  },
@@ -1820,24 +1834,14 @@
 	    var newComment = {
 	      body: comment,
 	      created_by: {
-	        userId: user._id
+	        userId: localStorage.getItem('userId')
 	      }
 	    };
 
-	    PostsService.addComment(newComment, postId, function () {
-
-	      for (var i = 0; i < wall.length; i++) {
-	        if (wall[i]._id == postId) {
-
-	          wall[i].comments.push(newComment);
-
-	          self.setState({
-	            wall: wall
-	          });
-
-	          break;
-	        }
-	      }
+	    PostsService.addComment(newComment, postId, function (result) {
+	      self.setState({
+	        wall: result.data.posts
+	      });
 	    });
 	  },
 	  selectAvatar: function selectAvatar() {
@@ -1865,9 +1869,7 @@
 
 	    var displayContent;
 
-	    if (this.state.display === 0) displayContent = React.createElement(Wall, { posts: this.state.wall, postComment: this.postComment });else if (this.state.display == 1) displayContent = React.createElement(FriendsList, null);else if (this.state.display == 2) displayContent = React.createElement(ProfileData, { profile: this.state.user, updateProfile: this.updateProfile });
-
-	    console.log(this.state.user);
+	    if (this.state.display === 0) displayContent = React.createElement(Wall, { posts: this.state.wall, postComment: this.postComment });else if (this.state.display == 1) displayContent = React.createElement(FriendsList, { friends: this.state.user.friends });else if (this.state.display == 2) displayContent = React.createElement(ProfileData, { profile: this.state.user });
 
 	    var avatar = React.createElement(
 	      'i',
@@ -1895,6 +1897,20 @@
 	          'div',
 	          { id: 'profilePicture', className: 'hoverable', onClick: this.selectAvatar },
 	          avatar
+	        ),
+	        React.createElement(
+	          'div',
+	          { id: 'profileHeadData' },
+	          React.createElement(
+	            'h1',
+	            null,
+	            this.state.user.firstname + " " + this.state.user.lastname
+	          ),
+	          React.createElement(
+	            'blockquote',
+	            null,
+	            this.state.quote
+	          )
 	        ),
 	        React.createElement(
 	          'div',
@@ -1971,7 +1987,7 @@
 	  render: function render() {
 
 	    var posts = this.props.posts;
-	    posts.propAsort("created_at");
+	    // posts.propAsort("created_at");
 
 	    var self = this;
 	    var wallPosts = this.props.posts.map(function (post, i) {
@@ -2022,13 +2038,18 @@
 	    var author = post.created_by;
 	    var authorFullname = author ? author.firstname + " " + author.lastname : null;
 
+	    var avatar = "";
+	    if (author && author.avatar) {
+	      avatar = author.avatar.replace("/upload/", "/upload/w_60,h_60,c_fill/");
+	    }
+
 	    return React.createElement(
 	      'div',
 	      { style: { margin: "50px 0" }, className: 'wallPost row' },
 	      React.createElement(
 	        'div',
 	        { className: 'col l1 offset-l2 m1 offset-m1 s1' },
-	        React.createElement('div', { style: { height: "60px", width: "60px", marginTop: "7px" }, className: 'blue tooltipped hoverable', 'data-position': 'left', 'data-delay': '50', 'data-tooltip': authorFullname })
+	        React.createElement('div', { style: { height: "60px", width: "60px", marginTop: "7px", background: "url(" + avatar + ")" }, className: 'blue tooltipped hoverable', 'data-position': 'left', 'data-delay': '50', 'data-tooltip': authorFullname })
 	      ),
 	      React.createElement(
 	        'div',
@@ -2101,8 +2122,6 @@
 	  },
 	  render: function render() {
 
-	    console.log(this.props);
-
 	    var comment = this.props.comment;
 	    var author = comment.created_by;
 	    var authorFullname = author ? author.firstname + " " + author.lastname : null;
@@ -2141,16 +2160,20 @@
 	    return {};
 	  },
 	  render: function render() {
+
+	    var friendsListItem = this.props.friends.map(function (friendship, index) {
+	      if (friendship.status == "accepted") {
+	        return React.createElement(FriendsListItem, { user: friendship.user, key: index });
+	      }
+	    });
+
 	    return React.createElement(
 	      'div',
 	      { id: 'friendsList', className: 'container' },
 	      React.createElement(
 	        'ul',
 	        { className: 'collection hoverable' },
-	        React.createElement(FriendsListItem, { name: 'Chuck Norris' }),
-	        React.createElement(FriendsListItem, { name: 'Jean-CLaude VanDamme' }),
-	        React.createElement(FriendsListItem, { name: 'Steven Seagal' }),
-	        React.createElement(FriendsListItem, { name: 'Kurt Russel' })
+	        friendsListItem
 	      )
 	    );
 	  }
@@ -2162,39 +2185,44 @@
 /* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	var React = __webpack_require__(3);
+	var browserHistory = __webpack_require__(5).browserHistory;
 
 	var FriendsListItem = React.createClass({
-	  displayName: "FriendsListItem",
+	  displayName: 'FriendsListItem',
 	  getInitialState: function getInitialState() {
 	    return {};
 	  },
+	  displayProfile: function displayProfile(e) {
+	    browserHistory.push("/profile/" + this.props.user._id);
+	  },
 	  render: function render() {
+
+	    console.log(this.props.user);
+
+	    var user = this.props.user;
+	    var avatar = "";
+
+	    if (user.avatar) avatar = user.avatar.replace("/upload/", "/upload/w_42,h_42,c_fill/");
+
 	    return React.createElement(
-	      "li",
-	      { className: "collection-item avatar" },
-	      React.createElement("img", { src: "http://lorempixel.com/42/42/people", alt: "", className: "circle" }),
+	      'li',
+	      { className: 'collection-item avatar' },
+	      React.createElement('img', { onClick: this.displayProfile, src: avatar, alt: '', className: 'circle pointer' }),
 	      React.createElement(
-	        "span",
-	        { className: "title" },
-	        this.props.name
+	        'span',
+	        { className: 'title' },
+	        user.firstname + " " + user.lastname
 	      ),
 	      React.createElement(
-	        "p",
-	        null,
-	        "First Line ",
-	        React.createElement("br", null),
-	        "Second Line"
-	      ),
-	      React.createElement(
-	        "a",
-	        { href: "#!", className: "secondary-content" },
+	        'a',
+	        { onClick: this.displayProfile, className: 'secondary-content pointer' },
 	        React.createElement(
-	          "i",
-	          { className: "material-icons" },
-	          "send"
+	          'i',
+	          { className: 'material-icons' },
+	          'send'
 	        )
 	      )
 	    );
@@ -2220,6 +2248,11 @@
 	    };
 	  },
 	  render: function render() {
+	    console.log(this.props.profile);
+	    var email = React.createElement('div', null);
+	    if (this.props.profile._id == localStorage.getItem('userId')) {
+	      email = React.createElement(ProfileDataField, { label: 'E-mail', fieldLabel: 'email', value: this.props.profile.email, index: '3', updateProfile: this.props.updateProfile });
+	    }
 
 	    return React.createElement(
 	      'div',
@@ -2230,7 +2263,7 @@
 	        React.createElement(ProfileDataField, { label: 'Prénom', fieldLabel: 'firstname', value: this.props.profile.firstname, index: '0', updateProfile: this.props.updateProfile }),
 	        React.createElement(ProfileDataField, { label: 'Nom', fieldLabel: 'lastname', value: this.props.profile.lastname, index: '1', updateProfile: this.props.updateProfile }),
 	        React.createElement(ProfileDataField, { label: 'Âge', fieldLabel: 'age', value: this.props.profile.age + " ans", index: '2', updateProfile: this.props.updateProfile }),
-	        React.createElement(ProfileDataField, { label: 'E-mail', fieldLabel: 'email', value: this.props.profile.email, index: '3', updateProfile: this.props.updateProfile }),
+	        email,
 	        React.createElement(ProfileDataField, { label: 'Adresse', fieldLabel: 'address', value: this.props.profile.address, index: '4', updateProfile: this.props.updateProfile }),
 	        React.createElement(ProfileDataField, { label: 'Ville', fieldLabel: 'city', value: this.props.profile.city, index: '5', updateProfile: this.props.updateProfile })
 	      )
@@ -2296,9 +2329,15 @@
 	      );
 	    }
 
+	    var className = "collection-item row";
+
+	    if (this.props.updateProfile) {
+	      className += " personalDataField";
+	    }
+
 	    return React.createElement(
 	      'li',
-	      { className: 'collection-item row' },
+	      { className: className },
 	      React.createElement(
 	        'p',
 	        { className: 'col s5' },
@@ -2377,7 +2416,7 @@
 	                    console.log(data.error);
 	                    Materialize.toast(data.error, 3000, 'toastError');
 	                } else {
-	                    callback();
+	                    callback(data);
 	                }
 	            },
 	            error: function error(jqXHR, status, _error2) {
@@ -2407,7 +2446,7 @@
 	                    console.log(data.error);
 	                    Materialize.toast(data.error, 3000, 'toastError');
 	                } else {
-	                    callback();
+	                    callback(data);
 	                }
 	            },
 	            error: function error(jqXHR, status, _error3) {
@@ -2490,10 +2529,240 @@
 
 	var React = __webpack_require__(3);
 	var NavBar = __webpack_require__(15);
-	var MessageList = __webpack_require__(39);
-	var MessageForm = __webpack_require__(42);
-	var Pagination = __webpack_require__(44);
-	var MessageService = __webpack_require__(43);
+	var Footer = __webpack_require__(21);
+	var PostInput = __webpack_require__(27);
+	var Wall = __webpack_require__(28);
+	var FriendsList = __webpack_require__(32);
+	var ProfileData = __webpack_require__(34);
+	var config = __webpack_require__(11);
+	var PostsService = __webpack_require__(36);
+	var UserService = __webpack_require__(17);
+
+	var ToolBar = __webpack_require__(37);
+
+	var MyProfile = React.createClass({
+	  displayName: 'MyProfile',
+	  getInitialState: function getInitialState() {
+
+	    console.log("profile initial state");
+
+	    return {
+	      display: 0,
+	      user: {},
+	      wall: []
+	    };
+	  },
+	  componentDidMount: function componentDidMount() {
+
+	    console.log("component did mount");
+
+	    var self = this;
+	    $('.profile_parallax').parallax();
+
+	    $('#profilePicture').append($.cloudinary.unsigned_upload_tag("ygdxw3yr", { cloud_name: 'minibook' }));
+
+	    $('.cloudinary_fileupload').hide();
+
+	    $('.cloudinary_fileupload').bind('cloudinarydone', function (e, data) {
+
+	      self.updateProfile({
+	        label: "avatar",
+	        value: data.result.secure_url
+	      });
+	    });
+
+	    var self = this;
+
+	    this.findUserWallById(localStorage.getItem('userId'), function (wall) {
+
+	      self.setState({
+	        user: wall.user,
+	        wall: wall.posts
+	      });
+
+	      self.fetchRandomQuote(function (data) {
+	        if (data && data.quote) self.setState({
+	          quote: data.quote
+	        });
+	      });
+	    });
+	  },
+	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+	    $('.wallPost .tooltipped').tooltip({ delay: 50 });
+	  },
+	  findUserWallById: function findUserWallById(id, callback) {
+
+	    $.ajax({
+	      method: "GET",
+	      url: config[process.env.NODE_ENV].api + '/users/wall/' + id,
+	      data: { sessionId: localStorage.getItem("sessionId") },
+	      success: function success(data, status) {
+
+	        callback(data);
+	      },
+	      error: function error(jqXHR, status, _error) {
+	        console.log("find user by id error");
+	        Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	      }
+
+	    });
+	  },
+	  fetchRandomQuote: function fetchRandomQuote(callback) {
+
+	    $.ajax({
+	      method: "GET",
+	      url: config[process.env.NODE_ENV].api + '/quotes/random',
+	      success: function success(data, status) {
+	        callback(data);
+	      },
+	      error: function error(jqXHR, status, _error2) {
+	        Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	      }
+
+	    });
+	  },
+	  selectContent: function selectContent(index) {
+	    this.setState({
+	      display: index
+	    });
+	  },
+	  createPost: function createPost(post) {
+
+	    var self = this;
+	    var user = this.state.user;
+	    var wall = this.state.wall;
+
+	    var newPost = {
+	      body: post,
+	      created_by: {
+	        userId: localStorage.getItem('userId')
+	      }
+	    };
+
+	    PostsService.create(newPost, user._id, function (result) {
+	      console.log("posts service callback");
+	      self.setState({
+	        wall: result.data.posts
+	      });
+	    });
+	  },
+	  postComment: function postComment(comment, postId) {
+
+	    var self = this;
+	    var user = this.state.user;
+	    var wall = this.state.wall;
+
+	    var newComment = {
+	      body: comment,
+	      created_by: {
+	        userId: localStorage.getItem('userId')
+	      }
+	    };
+
+	    PostsService.addComment(newComment, postId, function (result) {
+
+	      self.setState({
+	        wall: result.data.posts
+	      });
+	    });
+	  },
+	  selectAvatar: function selectAvatar() {
+	    $('.cloudinary_fileupload').trigger('click');
+	  },
+	  updateProfile: function updateProfile(field) {
+
+	    var user = this.state.user;
+
+	    user[field.label] = field.value;
+	    this.setState({
+	      user: user
+	    });
+
+	    var updatedFields = {};
+	    updatedFields[field.label] = field.value;
+
+	    UserService.update(user._id, updatedFields, function () {
+	      Materialize.toast("Champs modifié avec succès", 2000, 'toastSuccess');
+	    });
+	  },
+	  render: function render() {
+
+	    console.log("my profile render");
+
+	    var displayContent;
+
+	    if (this.state.display === 0) displayContent = React.createElement(Wall, { posts: this.state.wall, postComment: this.postComment });else if (this.state.display == 1) displayContent = React.createElement(FriendsList, { friends: this.state.user.friends });else if (this.state.display == 2) displayContent = React.createElement(ProfileData, { profile: this.state.user, updateProfile: this.updateProfile });
+
+	    console.log(this.state.user);
+
+	    var avatar = React.createElement(
+	      'i',
+	      { className: 'large material-icons' },
+	      'add'
+	    );
+	    if (this.state.user.avatar) {
+	      var url = this.state.user.avatar;
+	      url = url.replace("/upload/", "/upload/w_200,h_200,c_fill/");
+	      avatar = React.createElement('img', { src: url });
+	    }
+
+	    return React.createElement(
+	      'div',
+	      { id: 'userProfile' },
+	      React.createElement(
+	        'div',
+	        { className: 'parallax-container' },
+	        React.createElement(
+	          'div',
+	          { className: 'profile_parallax' },
+	          React.createElement('img', { src: '/images/user-background1.jpg' })
+	        ),
+	        React.createElement(
+	          'div',
+	          { id: 'profilePicture', className: 'hoverable', onClick: this.selectAvatar },
+	          avatar
+	        ),
+	        React.createElement(
+	          'div',
+	          { id: 'profileHeadData' },
+	          React.createElement(
+	            'h1',
+	            null,
+	            this.state.user.firstname + " " + this.state.user.lastname
+	          ),
+	          React.createElement(
+	            'blockquote',
+	            null,
+	            this.state.quote
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'container' },
+	          React.createElement(ToolBar, { selectContent: this.selectContent }),
+	          React.createElement(PostInput, { post: this.createPost })
+	        )
+	      ),
+	      displayContent,
+	      React.createElement('div', { style: { height: "350px" } })
+	    );
+	  }
+	});
+
+	module.exports = MyProfile;
+
+/***/ },
+/* 39 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(3);
+	var NavBar = __webpack_require__(15);
+	var MessageList = __webpack_require__(40);
+	var MessageForm = __webpack_require__(43);
+	var Pagination = __webpack_require__(45);
+	var MessageService = __webpack_require__(44);
 
 	var Inbox = React.createClass({
 	  displayName: 'Inbox',
@@ -2601,7 +2870,7 @@
 	module.exports = Inbox;
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2609,7 +2878,7 @@
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var React = __webpack_require__(3);
-	var MessageLine = __webpack_require__(40);
+	var MessageLine = __webpack_require__(41);
 
 	var MessageList = React.createClass({
 	  displayName: 'MessageList',
@@ -2645,13 +2914,13 @@
 	module.exports = MessageList;
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var moment = __webpack_require__(41);
+	var moment = __webpack_require__(42);
 
 	var MessageLine = React.createClass({
 	  displayName: 'MessageLine',
@@ -2723,19 +2992,19 @@
 	module.exports = MessageLine;
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports) {
 
 	module.exports = require("moment");
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var MessageService = __webpack_require__(43);
+	var MessageService = __webpack_require__(44);
 
 	var MessageForm = React.createClass({
 	  displayName: 'MessageForm',
@@ -2856,7 +3125,7 @@
 	module.exports = MessageForm;
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2927,7 +3196,7 @@
 	module.exports = MessageService;
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3022,15 +3291,15 @@
 	module.exports = Pagination;
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
 	var NavBar = __webpack_require__(15);
-	var UserList = __webpack_require__(46);
-	var Stats = __webpack_require__(48);
+	var UserList = __webpack_require__(47);
+	var Stats = __webpack_require__(49);
 	var UserService = __webpack_require__(17);
 
 	var Admin = React.createClass({
@@ -3164,7 +3433,7 @@
 	module.exports = Admin;
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3172,7 +3441,7 @@
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var React = __webpack_require__(3);
-	var UserListItem = __webpack_require__(47);
+	var UserListItem = __webpack_require__(48);
 
 	var UserList = React.createClass({
 	  displayName: 'UserList',
@@ -3207,13 +3476,13 @@
 	module.exports = UserList;
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var moment = __webpack_require__(41);
+	var moment = __webpack_require__(42);
 	var browserHistory = __webpack_require__(5).browserHistory;
 
 	var UserListItem = React.createClass({
@@ -3310,7 +3579,7 @@
 	module.exports = UserListItem;
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3339,7 +3608,7 @@
 	module.exports = Stats;
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3400,7 +3669,7 @@
 	module.exports = Logout;
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

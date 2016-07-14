@@ -51,7 +51,7 @@ var UserProfile = React.createClass({
 
       var self = this;
       this.findUserWallById(this.props.params.id, function(wall) {
-
+console.log(wall);
           self.setState({
             user: wall.user,
             wall: wall.posts
@@ -192,7 +192,7 @@ var UserProfile = React.createClass({
     if (this.state.display === 0)
       displayContent = <Wall posts={this.state.wall} postComment={this.postComment}/>;
     else if (this.state.display == 1)
-      displayContent = <FriendsList />;
+      displayContent = <FriendsList friends={this.state.user.friends}/>;
     else if (this.state.display == 2)
       displayContent = <ProfileData profile={this.state.user} />;
 

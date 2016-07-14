@@ -16,10 +16,9 @@ var NavBarSearchItem = React.createClass({
 
   clickButton(e) {
     e.stopPropagation();
-    UserService.sendInvite(this.props.user, function() {
-      Materialize.toast("Demande d'ami envoyée !", 3000, 'toastSuccess');
-    });
 
+    this.props.invite(this.props.user);
+  
   },
 
   render() {

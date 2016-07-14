@@ -5,7 +5,7 @@ var Stats = require('./Stats.jsx');
 var UserService = require('../../services/UserService.jsx');
 
 var Admin = React.createClass({
-
+  socket: null,
   getInitialState() {
     return {
       users: []
@@ -20,6 +20,17 @@ var Admin = React.createClass({
       $('#adminTabs ul.tabs').tabs();  
 
       this.getUsers();
+
+
+      this.socket = io("http://localhost:1337");
+      console.log(this.socket);
+      this.socket.on("newlogin", function(data) {
+          if (data) {
+              alert("YO");
+          }
+          console.log(data);
+          alert("lol");
+      });
   },
 
 

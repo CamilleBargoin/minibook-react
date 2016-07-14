@@ -4,9 +4,8 @@ var browserHistory = require('react-router').browserHistory;
 
 
 var FriendBox = React.createClass({
-
   componentDidMount() {
-      
+
   },
 
   openFriendProfile() {
@@ -60,16 +59,19 @@ var FriendBox = React.createClass({
 
     const backgroundColor = colorArray[Math.floor(Math.random() * colorArray.length)];
 
-console.log(this.props.friendship.user.avatar);
+// console.log(this.props.friendship.user);
     let avatar = <div />
     if (this.props.friendship.user.avatar) {
       const url = this.props.friendship.user.avatar.replace("/upload/", "/upload/w_160,h_160,c_fill/");
       avatar = <img src={url} />
     }
 
+    const connectedColor = (this.props.friendship.user.online) ? "#00C853" : "red";
+
     return (
         <div onClick={this.openFriendProfile} className="friendBox hoverable tooltipped" data-position="bottom" data-delay="50" data-tooltip={tooltip} style={{backgroundColor: backgroundColor}}>
           {avatar}
+          <div className="connexionStatus" style={{backgroundColor: connectedColor}}/>
           <p>{this.props.friendship.user.firstname + " " + this.props.friendship.user.lastname }</p>
         </div>
     );
