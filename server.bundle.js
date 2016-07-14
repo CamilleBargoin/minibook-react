@@ -323,6 +323,8 @@
 
 	var LoginBox = React.createClass({
 	  displayName: 'LoginBox',
+
+	  socket: null,
 	  getInitialState: function getInitialState() {
 	    return {
 	      email: "",
@@ -338,7 +340,7 @@
 	    console.log("login action");
 
 	    var self = this;
-
+	    this.socket = io("http://localhost:1337");
 	    Auth.login(this.state.email, this.state.password, function () {
 	      console.log(window.document.cookie);
 	      console.log(self.props);
@@ -415,16 +417,16 @@
 	        success: function success(data, status) {
 
 	          if (data.success) {
-	            console.log("loggedIn success");
-	            console.log(data);
+	            // console.log("loggedIn success");
+	            // console.log(data);
 	            _success();
 	          } else {
-	            console.log(data);
+	            // console.log(data);
 	            error();
 	          }
 	        },
 	        error: function error(jqXHR, status, _error) {
-	          console.log("loggedIn error");
+	          // console.log("loggedIn error");
 	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	          _error();
 	        }
@@ -443,16 +445,16 @@
 	        success: function success(data, status) {
 
 	          if (data.success) {
-	            console.log("loggedIn success");
-	            console.log(data);
+	            // console.log("loggedIn success");
+	            // console.log(data);
 	            _success2();
 	          } else {
-	            console.log(data);
+	            // console.log(data);
 	            error();
 	          }
 	        },
 	        error: function error(jqXHR, status, _error2) {
-	          console.log("loggedIn error");
+	          // console.log("loggedIn error");
 	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	          _error2();
 	        }
@@ -464,7 +466,7 @@
 	  login: function login(email, password, callback) {
 
 	    if (Storage) {
-	      console.log(config[process.env.NODE_ENV].api);
+	      // console.log(config[process.env.NODE_ENV].api);
 	      $.ajax({
 	        type: 'POST',
 	        url: config[process.env.NODE_ENV].api + '/users/login',
@@ -475,7 +477,7 @@
 	        success: function success(data, status, jqXHR) {
 
 	          if (data.error) {
-	            console.log(data.error);
+	            // console.log(data.error);
 	            Materialize.toast(data.error, 3000, 'toastError');
 	          } else {
 
@@ -497,7 +499,7 @@
 
 	  logout: function logout(callback) {
 
-	    console.log("LOGOUT");
+	    // console.log("LOGOUT");
 
 	    if (Storage) {
 	      $.ajax({
@@ -505,7 +507,7 @@
 	        url: config[process.env.NODE_ENV].api + '/users/logout',
 	        data: { sessionId: localStorage.getItem("sessionId") },
 	        success: function success(data, status) {
-	          console.log("logout success");
+	          // console.log("logout success");
 
 	          if (data.success) {
 	            localStorage.setItem("sessionId", "");
@@ -513,7 +515,7 @@
 	          }
 	        },
 	        error: function error(jqXHR, status, _error4) {
-	          console.log("logout error");
+	          // console.log("logout error");
 	          Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
 	        }
 
@@ -538,10 +540,12 @@
 
 	module.exports = {
 	    "production": {
-	        "api": "https://minibook-express.herokuapp.com"
+	        "api": "http://minibook-express.herokuapp.com",
+	        "websocket": "http://minibook-express.herokuapp.com:1337"
 	    },
 	    "development": {
-	        "api": "http://localhost:3000"
+	        "api": "http://localhost:3000",
+	        "websocket": "http://localhost:1337"
 	    }
 	};
 
@@ -701,8 +705,6 @@
 	  componentDidMount: function componentDidMount() {
 
 	    this.getUser();
-
-	    var socket = io("http://192.168.1.93:3000");
 	  },
 	  getUser: function getUser() {
 
@@ -798,19 +800,40 @@
 	      }
 	    });
 	  },
-	  componentDidMount: function componentDidMount() {},
+	  componentDidMount: function componentDidMount() {
+	    var self = this;
+
+	    $(window).click(function () {
+	      if (self.state.showRequests) {
+	        self.setState({
+	          showRequests: false
+	        });
+	      }
+	    });
+	  },
 	  componentWillMount: function componentWillMount() {},
 	  searchUser: function searchUser(e) {
 	    e.preventDefault();
 	    alert(this.refs["userInput"].value);
 	  },
-	  showRequests: function showRequests() {
+	  showRequests: function showRequests(e) {
+
+	    e.stopPropagation();
 
 	    if (this.requests && this.requests.length > 0) {
 	      this.setState({
 	        showRequests: !this.state.showRequests
 	      });
 	    }
+	  },
+	  acceptRequest: function acceptRequest(request, index) {
+
+	    var self = this;
+
+	    UserService.befriend(request.user._id, function (result) {
+	      var t = self.requests.splice(index, 1);
+	      self.forceUpdate();
+	    });
 	  },
 	  displayHome: function displayHome() {
 	    browserHistory.push('/home');
@@ -833,9 +856,11 @@
 
 	    if (localStorage.getItem('sessionId')) {
 
+	      console.log(this.requests);
+
 	      var display = this.requests.length > 0 ? { display: "block" } : { display: "none" };
 	      var name = this.state.user ? this.state.user.firstname : "";
-	      var requestsList = this.state.showRequests ? React.createElement(NavBarRequests, { requests: this.requests, refresh: this.props.refresh }) : React.createElement('div', null);
+	      var requestsList = this.state.showRequests ? React.createElement(NavBarRequests, { requests: this.requests, acceptRequest: this.acceptRequest }) : React.createElement('div', null);
 
 	      var url = "";
 	      if (this.props.user.avatar) {
@@ -890,7 +915,7 @@
 	          ),
 	          React.createElement(
 	            'li',
-	            { style: { position: "relative" } },
+	            { id: 'showRequestsButton', style: { position: "relative" } },
 	            React.createElement(
 	              'a',
 	              null,
@@ -983,6 +1008,20 @@
 	      suggestions: []
 	    };
 	  },
+	  componentDidMount: function componentDidMount() {
+	    var self = this;
+
+	    $(window).on("click", function () {
+	      if (self.state) {
+	        self.setState({
+	          suggestions: []
+	        });
+	      }
+	    });
+	  },
+	  componentWillUnmount: function componentWillUnmount() {
+	    $(window).off("click");
+	  },
 	  onChange: function onChange(e) {
 	    var that = this;
 	    var input = this.refs["userInput"].value;
@@ -1007,14 +1046,17 @@
 	  selectUser: function selectUser(e) {
 	    console.log(e.currentTarget);
 	  },
+	  invite: function invite(user) {
+	    UserService.sendInvite(user, function () {
+	      Materialize.toast("Demande d'ami envoyée !", 3000, 'toastSuccess');
+	    });
+	  },
 	  render: function render() {
 
-	    var that = this;
+	    var self = this;
 	    var displayUserSuggestions = this.state.suggestions.length > 0 ? "block" : "none";
 	    var userSuggestions = this.state.suggestions.map(function (user, key) {
-	      // return (<li className="collection-item"  onClick={that.selectUser} key={key}>{user.firstname} {user.lastname}</li>)
-
-	      return React.createElement(NavBarSearchItem, { user: user, key: key });
+	      return React.createElement(NavBarSearchItem, { user: user, invite: self.invite, key: key });
 	    });
 
 	    return React.createElement(
@@ -1181,9 +1223,8 @@
 	  },
 	  clickButton: function clickButton(e) {
 	    e.stopPropagation();
-	    UserService.sendInvite(this.props.user, function () {
-	      Materialize.toast("Demande d'ami envoyée !", 3000, 'toastSuccess');
-	    });
+
+	    this.props.invite(this.props.user);
 	  },
 	  render: function render() {
 
@@ -1208,13 +1249,13 @@
 /* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	var React = __webpack_require__(3);
 	var UserService = __webpack_require__(17);
 
 	var NavBarRequests = React.createClass({
-	    displayName: 'NavBarRequests',
+	    displayName: "NavBarRequests",
 	    getInitialState: function getInitialState() {
 	        return {
 	            requests: this.props.requests
@@ -1229,20 +1270,8 @@
 	        e.stopPropagation();
 
 	        var requests = this.state.requests;
-
 	        var request = this.state.requests[index];
-	        var self = this;
-
-	        UserService.befriend(request.user._id, function (err, result) {
-
-	            if (err) {} else {
-
-	                // var t = requests.splice(index, 1);
-
-	                // self.props.updateRequests(requests.splice(index, 1));
-	                self.props.refresh('user');
-	            }
-	        });
+	        this.props.acceptRequest(request, index);
 	    },
 	    render: function render() {
 
@@ -1254,27 +1283,27 @@
 	            var fromFullname = requestFrom.firstname + " " + requestFrom.lastname;
 
 	            return React.createElement(
-	                'li',
-	                { key: index, href: '#!', className: 'collection-item requests-item' },
+	                "li",
+	                { key: index, className: "collection-item requests-item" },
 	                fromFullname,
 	                React.createElement(
-	                    'a',
-	                    { className: 'btn-floating', onClick: self.acceptRequest.bind(null, index) },
+	                    "a",
+	                    { className: "btn-floating", onClick: self.acceptRequest.bind(null, index) },
 	                    React.createElement(
-	                        'i',
-	                        { className: 'material-icons' },
-	                        'add'
+	                        "i",
+	                        { className: "material-icons" },
+	                        "add"
 	                    )
 	                )
 	            );
 	        });
 
 	        return React.createElement(
-	            'div',
-	            { className: 'requestsList' },
+	            "div",
+	            { className: "requestsList" },
 	            React.createElement(
-	                'ul',
-	                { className: 'collection' },
+	                "ul",
+	                { className: "collection" },
 	                requestsItems
 	            )
 	        );
@@ -1473,9 +1502,14 @@
 	var React = __webpack_require__(3);
 	var FriendBox = __webpack_require__(23);
 	var UserService = __webpack_require__(17);
+	var config = __webpack_require__(11);
 
-	var FriendBoxContainer = React.createClass({
-	  displayName: 'FriendBoxContainer',
+	var FriendGrid = React.createClass({
+	  displayName: 'FriendGrid',
+
+
+	  socket: null,
+
 	  getInitialState: function getInitialState() {
 	    if (this.props.user) {
 	      return {
@@ -1487,13 +1521,52 @@
 	      friendships: []
 	    };
 	  },
+	  componentDidMount: function componentDidMount() {},
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.socket.off('user login');
+	    this.socket.off('user logout');
+	    this.socket.off('new friend');
+	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    this.setState({
-	      friendships: nextProps.user.friends || []
-	    });
+
+	    if (nextProps.user && nextProps.user._id) {
+
+	      this.setState({
+	        friendships: nextProps.user.friends || []
+	      }, function () {
+
+	        // this.socket = io("http://localhost:1337");
+	        this.socket = io(config[process.env.NODE_ENV].websocket);
+	        this.socket.emit('room', nextProps.user._id);
+
+	        this.socket.on('user login', this.updateFriendOnlineStatus);
+	        this.socket.on('user logout', this.updateFriendOnlineStatus);
+	        this.socket.on('new friend', this.updateFriendList);
+	      });
+	    }
 	  },
 	  componentDidUpdate: function componentDidUpdate() {
 	    $('.friendBox.tooltipped').tooltip({ delay: 50 });
+	  },
+	  updateFriendOnlineStatus: function updateFriendOnlineStatus(data) {
+
+	    var friendships = this.state.friendships;
+
+	    var updatedFriendships = friendships.map(function (friendship, index) {
+	      if (friendship.user._id == data._id) friendship.user.online = data.online;
+
+	      return friendship;
+	    });
+
+	    this.setState({
+	      friendships: updatedFriendships
+	    });
+	  },
+	  updateFriendList: function updateFriendList(data) {
+	    console.log(data);
+	    this.setState({
+	      friendships: data.friends
+	    });
 	  },
 	  render: function render() {
 
@@ -1517,7 +1590,7 @@
 	  }
 	});
 
-	module.exports = FriendBoxContainer;
+	module.exports = FriendGrid;
 
 /***/ },
 /* 23 */
@@ -1551,17 +1624,20 @@
 
 	    var backgroundColor = colorArray[Math.floor(Math.random() * colorArray.length)];
 
-	    console.log(this.props.friendship.user.avatar);
+	    // console.log(this.props.friendship.user);
 	    var avatar = React.createElement('div', null);
 	    if (this.props.friendship.user.avatar) {
 	      var url = this.props.friendship.user.avatar.replace("/upload/", "/upload/w_160,h_160,c_fill/");
 	      avatar = React.createElement('img', { src: url });
 	    }
 
+	    var connectedColor = this.props.friendship.user.online ? "#00C853" : "red";
+
 	    return React.createElement(
 	      'div',
 	      { onClick: this.openFriendProfile, className: 'friendBox hoverable tooltipped', 'data-position': 'bottom', 'data-delay': '50', 'data-tooltip': tooltip, style: { backgroundColor: backgroundColor } },
 	      avatar,
+	      React.createElement('div', { className: 'connexionStatus', style: { backgroundColor: connectedColor } }),
 	      React.createElement(
 	        'p',
 	        null,
@@ -3304,6 +3380,8 @@
 
 	var Admin = React.createClass({
 	  displayName: 'Admin',
+
+	  socket: null,
 	  getInitialState: function getInitialState() {
 	    return {
 	      users: []

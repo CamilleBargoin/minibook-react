@@ -119,12 +119,20 @@ blockquote {
 
 .requests-item {
     position: relative;
+    width: 100%;
+    color: #202020;
+    text-align: left;
 }
 
 .requests-item a {
+    margin: 0;
     position: absolute;
     right: 5px;
-    top: 2px;
+    top: 4px;
+}
+
+.requests-item a i {
+    line-height: 37px;
 }
 
 .navbar-avatar {
@@ -195,6 +203,16 @@ blockquote {
     width: 100%;
     text-align: center;
     position: absolute;
+}
+
+.friendBox .connexionStatus {
+    width: 12px;
+    height: 12px;
+    border-radius: 12px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    border: 1px solid #333;
 }
 
 #userProfile .collection .collection-item {
