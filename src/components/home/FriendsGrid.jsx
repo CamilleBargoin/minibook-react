@@ -1,6 +1,7 @@
 var React = require('react');
 var FriendBox = require('../FriendBox.jsx');
 var UserService = require('../../services/UserService.jsx');
+var config = require('../../../config.js');
 
 
 var FriendGrid = React.createClass({
@@ -38,7 +39,8 @@ var FriendGrid = React.createClass({
         }, function() {
 
 
-          this.socket = io("http://localhost:1337");
+          // this.socket = io("http://localhost:1337");
+          this.socket = io(config[process.env.NODE_ENV].websocket);
           this.socket.emit('room', nextProps.user._id);
 
           this.socket.on('user login', this.updateFriendOnlineStatus);

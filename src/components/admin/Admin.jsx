@@ -22,15 +22,8 @@ var Admin = React.createClass({
       this.getUsers();
 
 
-      this.socket = io("http://localhost:1337");
-      console.log(this.socket);
-      this.socket.on("newlogin", function(data) {
-          if (data) {
-              alert("YO");
-          }
-          console.log(data);
-          alert("lol");
-      });
+      
+      
   },
 
 
