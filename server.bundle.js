@@ -59,11 +59,6 @@
 
 	var app = express();
 
-	var urlDatabase = 'mongodb://minibook:123456@ds023373.mlab.com:23373/minibook';
-	mongoose.connect(urlDatabase);
-
-	var db = mongoose.connection;
-
 	app.use(express.static(path.join(__dirname, 'public')));
 
 	app.use(function (req, res, next) {
