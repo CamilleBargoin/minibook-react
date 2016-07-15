@@ -341,7 +341,8 @@
 	    console.log("login action");
 
 	    var self = this;
-	    this.socket = io(config[process.env.NODE_ENV].websocket);
+	    this.socket = io("http://minibook-express.herokuapp.com");
+
 	    Auth.login(this.state.email, this.state.password, function () {
 	      console.log(window.document.cookie);
 	      console.log(self.props);
@@ -1537,12 +1538,14 @@
 	      }, function () {
 
 	        // this.socket = io("http://localhost:1337");
-	        this.socket = io(config[process.env.NODE_ENV].websocket);
-	        this.socket.emit('room', nextProps.user._id);
+	        // this.socket = io(config[process.env.NODE_ENV].websocket);
 
-	        this.socket.on('user login', this.updateFriendOnlineStatus);
-	        this.socket.on('user logout', this.updateFriendOnlineStatus);
-	        this.socket.on('new friend', this.updateFriendList);
+	        // this.socket.emit('room', nextProps.user._id);
+
+	        // this.socket.on('user login', this.updateFriendOnlineStatus);
+	        // this.socket.on('user logout', this.updateFriendOnlineStatus);
+	        // this.socket.on('new friend', this.updateFriendList);     
+
 	      });
 	    }
 	  },

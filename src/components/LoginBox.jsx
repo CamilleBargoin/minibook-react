@@ -23,7 +23,8 @@ var LoginBox = React.createClass({
 console.log("login action");
 
     const self = this;
-this.socket = io(config[process.env.NODE_ENV].websocket);
+this.socket = io("http://minibook-express.herokuapp.com");
+
     Auth.login(this.state.email, this.state.password, function() {
       console.log(window.document.cookie);
 console.log(self.props);
