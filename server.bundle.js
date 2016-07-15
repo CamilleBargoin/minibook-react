@@ -59,6 +59,11 @@
 
 	var app = express();
 
+	var urlDatabase = 'mongodb://minibook:123456@ds023373.mlab.com:23373/minibook';
+	mongoose.connect(urlDatabase);
+
+	var db = mongoose.connection;
+
 	app.use(express.static(path.join(__dirname, 'public')));
 
 	app.use(function (req, res, next) {
@@ -344,14 +349,12 @@
 	    this.setState(obj);
 	  },
 	  login: function login() {
-	    console.log("login action");
 
 	    var self = this;
-	    this.socket = io("http://minibook-express.herokuapp.com:8080");
+	    // this.socket = io("http://minibook-express.herokuapp.com:8080");
 
 	    Auth.login(this.state.email, this.state.password, function () {
-	      console.log(window.document.cookie);
-	      console.log(self.props);
+
 	      self.props.refreshUser();
 	      browserHistory.push('/home');
 	    });
@@ -1531,9 +1534,9 @@
 	  },
 	  componentDidMount: function componentDidMount() {},
 	  componentWillUnmount: function componentWillUnmount() {
-	    this.socket.off('user login');
-	    this.socket.off('user logout');
-	    this.socket.off('new friend');
+	    // this.socket.off('user login');
+	    // this.socket.off('user logout');
+	    // this.socket.off('new friend');
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 

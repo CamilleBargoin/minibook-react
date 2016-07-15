@@ -20,16 +20,14 @@ var LoginBox = React.createClass({
   },
 
   login() {
-console.log("login action");
+
 
     const self = this;
-this.socket = io("http://minibook-express.herokuapp.com:8080");
-
-
+    // this.socket = io("http://minibook-express.herokuapp.com:8080");
 
     Auth.login(this.state.email, this.state.password, function() {
-      console.log(window.document.cookie);
-console.log(self.props);
+
+
       self.props.refreshUser();
       browserHistory.push('/home');
     });

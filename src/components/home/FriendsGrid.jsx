@@ -25,9 +25,9 @@ var FriendGrid = React.createClass({
   },
 
   componentWillUnmount() {
-      this.socket.off('user login');
-      this.socket.off('user logout');
-      this.socket.off('new friend');
+      // this.socket.off('user login');
+      // this.socket.off('user logout');
+      // this.socket.off('new friend');
   },
 
   componentWillReceiveProps(nextProps) {
