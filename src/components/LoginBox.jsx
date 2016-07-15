@@ -24,6 +24,8 @@ console.log("login action");
 
     const self = this;
 this.socket = io("http://minibook-express.herokuapp.com");
+ io.set('transports', ['websocket', 'xhr-polling', 'jsonp-polling', 'htmlfile', 'flashsocket']);
+    io.set('origins', '*:*');
 
     Auth.login(this.state.email, this.state.password, function() {
       console.log(window.document.cookie);
