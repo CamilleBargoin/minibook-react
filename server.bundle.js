@@ -347,7 +347,7 @@
 	    console.log("login action");
 
 	    var self = this;
-	    this.socket = io("http://minibook-express.herokuapp.com");
+	    this.socket = io("http://minibook-express.herokuapp.com:80");
 
 	    Auth.login(this.state.email, this.state.password, function () {
 	      console.log(window.document.cookie);

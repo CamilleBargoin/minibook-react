@@ -23,7 +23,7 @@ var LoginBox = React.createClass({
 console.log("login action");
 
     const self = this;
-this.socket = io("http://minibook-express.herokuapp.com");
+this.socket = io("http://minibook-express.herokuapp.com:80");
 
 
 
