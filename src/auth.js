@@ -18,10 +18,14 @@ var AuthService = {
               if (data.success) {
                 // console.log("loggedIn success");
                 console.log(data);
+                if (data && data.port)
+                  localStorage.setItem("serverPort", data.port);
                 success(data);
                 }
               else {
                 console.log(data);
+                if (data && data.port)
+                  localStorage.setItem("serverPort", data.port);
                 error(data);
               }
             },

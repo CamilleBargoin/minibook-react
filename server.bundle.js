@@ -423,9 +423,11 @@
 	          if (data.success) {
 	            // console.log("loggedIn success");
 	            console.log(data);
+	            if (data && data.port) localStorage.setItem("serverPort", data.port);
 	            _success(data);
 	          } else {
 	            console.log(data);
+	            if (data && data.port) localStorage.setItem("serverPort", data.port);
 	            error(data);
 	          }
 	        },
@@ -1543,6 +1545,8 @@
 	      }, function () {
 
 	        // this.socket = io("http://localhost:1337");
+	        //
+	        console.log(config[process.env.NODE_ENV].websocket + ":" + localstorage.getItem('serverPort'));
 	        this.socket = io(config[process.env.NODE_ENV].websocket + ":" + localstorage.getItem('serverPort'));
 
 	        this.socket.emit('room', nextProps.user._id);
