@@ -601,7 +601,7 @@
 	          Materialize.toast("Ton compte vient d'être créé!", 2000, 'toastSuccess', function () {
 	            //req.session.test = "ceciestuntest";
 	            Auth.login(newUser.email, newUser.password, function () {
-	              browserHistory.push('/home');
+	              browserHistory.push('/');
 	            });
 	          });
 	        }
@@ -847,7 +847,7 @@
 	    });
 	  },
 	  displayHome: function displayHome() {
-	    browserHistory.push('/home');
+	    browserHistory.push('/');
 	  },
 	  logout: function logout() {
 	    browserHistory.push('/logout');
@@ -877,7 +877,7 @@
 	      }
 
 	      var adminControl = React.createElement('div', null);
-	      if (this.props.user.role == 2) {
+	      if (this.props.user.role == "2") {
 	        adminControl = React.createElement(
 	          'a',
 	          { onClick: this.displayAdmin, className: 'adminControl' },
@@ -895,7 +895,7 @@
 	        { className: 'center' },
 	        React.createElement(
 	          'a',
-	          { onClick: this.displayHome, className: 'brand-logo' },
+	          { onClick: this.displayHome, className: 'brand-logo pointer' },
 	          'minibook'
 	        ),
 	        adminControl,
@@ -1701,7 +1701,11 @@
 	        };
 
 	        var messages = this.state.messages;
-	        messages.push(newMessage);
+	        messages.push({
+	            created_by: { _id: localStorage.getItem("userId") },
+	            created_at: new Date().getTime(),
+	            body: this.refs.messageInput.value
+	        });
 	        this.setState({
 	            messages: messages
 	        });
@@ -1720,7 +1724,7 @@
 	        });
 	    },
 	    componentWillUnmount: function componentWillUnmount() {
-	        clearInterval(this.refreshInterval);
+	        clearTimeout(this.refreshInterval);
 	    },
 	    openChat: function openChat(callback) {
 
@@ -1730,8 +1734,7 @@
 	            if (result && result.discussion) {
 
 	                self.setState({
-	                    id: result.discussion._id,
-	                    messages: result.discussion.messages
+	                    id: result.discussion._id
 	                });
 
 	                callback();
@@ -1741,15 +1744,20 @@
 	    startRefreshInterval: function startRefreshInterval() {
 
 	        var self = this;
-	        this.refreshInterval = setInterval(function () {
+	        var timer;
+
+	        this.refreshInterval = setTimeout(delay, 0);
+	        function delay() {
 	            ChatService.get(self.state.id, function (result) {
 	                if (result && result.discussion) {
+
 	                    self.setState({
 	                        messages: result.discussion.messages
 	                    });
 	                }
 	            });
-	        }, 3000);
+	            self.refreshInterval = setTimeout(delay, 3000);
+	        }
 	    },
 	    render: function render() {
 
@@ -1758,18 +1766,18 @@
 
 	        return React.createElement(
 	            'div',
-	            { style: { width: "250px", height: "360px", position: "fixed", bottom: 0, right: "20px", margin: 0, padding: 0 }, className: 'grey lighten-5 hoverable' },
+	            { id: 'chatContainer', className: 'grey lighten-5 hoverable' },
 	            React.createElement(
 	                'div',
-	                { className: 'green', style: { width: "100%", height: "35px", margin: 0 } },
+	                { className: 'chatTop green accent-4' },
 	                React.createElement(
 	                    'div',
-	                    { className: 'white-text left', style: { width: "80%", height: "35px", lineHeight: "35px", paddingLeft: "10px" } },
+	                    { className: 'white-text left username' },
 	                    targetName
 	                ),
 	                React.createElement(
 	                    'div',
-	                    { onClick: this.onClose, className: 'waves-effect waves-light btn right green', style: { width: "34px", height: "34px", padding: 0 } },
+	                    { onClick: this.onClose, className: 'closeButton waves-effect waves-light btn right light-blue darken-3' },
 	                    React.createElement(
 	                        'i',
 	                        { className: 'material-icons small white-text' },
@@ -1779,22 +1787,22 @@
 	            ),
 	            React.createElement(
 	                'div',
-	                { style: { width: "250px", height: "320px", margin: "0 auto", padding: 0 } },
+	                { className: 'chatBody', style: {} },
 	                React.createElement(
 	                    'div',
-	                    { id: 'chatBody', style: { display: "block", width: "100%", height: "260px", margin: 0, padding: 0, overflowX: "scroll" } },
+	                    { className: 'messagesListContainer' },
 	                    React.createElement(Messages, { messages: this.state.messages })
 	                ),
 	                React.createElement(
 	                    'div',
-	                    { style: { display: "block", width: "100%", height: "40px" } },
+	                    { className: 'chatBottom', style: {} },
 	                    React.createElement(
 	                        'form',
-	                        { onSubmit: this.submitMessage },
+	                        { id: 'chatInputForm', onSubmit: this.submitMessage },
 	                        React.createElement(
 	                            'div',
-	                            { className: 'input-field', style: { borderTop: "2px solid #202020" } },
-	                            React.createElement('input', { type: 'text', placeholder: 'Ton message...', ref: 'messageInput', style: { paddingLeft: "10px" } })
+	                            { className: 'input-field' },
+	                            React.createElement('input', { type: 'text', placeholder: 'Ton message...', ref: 'messageInput' })
 	                        )
 	                    )
 	                )
@@ -1899,20 +1907,26 @@
 	    render: function render() {
 
 	        var texts = this.state.messages.map(function (message, i) {
+	            console.log(message);
+	            var avatar = "";
 
-	            if (message.created_by == localStorage.getItem("userId")) {
-	                return React.createElement(
-	                    "p",
-	                    { key: i },
-	                    message.body
-	                );
+	            if (message.created_by.avatar) avatar = message.created_by.avatar.replace("/upload/", "/upload/w_30,h_30,c_fill/");
+
+	            var className = "messageContainer";
+
+	            if (message.created_by._id != localStorage.getItem("userId")) {
+	                className += " stickRight";
 	            }
+
 	            return React.createElement(
-	                "p",
-	                { style: { textAlign: "right", width: "100%" }, key: i },
-	                " ",
-	                message.body,
-	                " "
+	                "div",
+	                { className: className, key: i },
+	                React.createElement("img", { src: avatar, className: "circle", alt: "" }),
+	                React.createElement(
+	                    "p",
+	                    { className: "message" },
+	                    message.body
+	                )
 	            );
 	        });
 
@@ -2108,6 +2122,20 @@
 	      avatar = React.createElement('img', { src: url });
 	    }
 
+	    var background = "/images/user-background-day.jpg";
+
+	    var hours = new Date().getHours();
+
+	    if (hours > 5 && hours <= 10) {
+	      background = "/images/user-background-morning.jpg";
+	    } else if (hours < 17) {
+	      background = "/images/user-background-day.jpg";
+	    } else if (hours <= 20) {
+	      background = "/images/user-background-evening.jpg";
+	    } else {
+	      background = "/images/user-background-night.jpg";
+	    }
+
 	    return React.createElement(
 	      'div',
 	      { id: 'userProfile' },
@@ -2117,7 +2145,7 @@
 	        React.createElement(
 	          'div',
 	          { className: 'profile_parallax' },
-	          React.createElement('img', { src: '/images/user-background1.jpg' })
+	          React.createElement('img', { src: background })
 	        ),
 	        React.createElement(
 	          'div',
@@ -2473,11 +2501,14 @@
 	      edit: false
 	    };
 	  },
+	  componentDidMount: function componentDidMount() {
+	    $('#genderSelect').material_select();
+	  },
 	  render: function render() {
 	    console.log(this.props.profile);
 	    var email = React.createElement('div', null);
 	    if (this.props.profile._id == localStorage.getItem('userId')) {
-	      email = React.createElement(ProfileDataField, { label: 'E-mail', fieldLabel: 'email', value: this.props.profile.email, index: '3', updateProfile: this.props.updateProfile });
+	      email = React.createElement(ProfileDataField, { label: 'E-mail', fieldLabel: 'email', value: this.props.profile.email, index: '0', updateProfile: this.props.updateProfile });
 	    }
 
 	    return React.createElement(
@@ -2486,12 +2517,12 @@
 	      React.createElement(
 	        'ul',
 	        { className: 'collection hoverable' },
-	        React.createElement(ProfileDataField, { label: 'Prénom', fieldLabel: 'firstname', value: this.props.profile.firstname, index: '0', updateProfile: this.props.updateProfile }),
-	        React.createElement(ProfileDataField, { label: 'Nom', fieldLabel: 'lastname', value: this.props.profile.lastname, index: '1', updateProfile: this.props.updateProfile }),
-	        React.createElement(ProfileDataField, { label: 'Âge', fieldLabel: 'age', value: this.props.profile.age + " ans", index: '2', updateProfile: this.props.updateProfile }),
 	        email,
-	        React.createElement(ProfileDataField, { label: 'Adresse', fieldLabel: 'address', value: this.props.profile.address, index: '4', updateProfile: this.props.updateProfile }),
-	        React.createElement(ProfileDataField, { label: 'Ville', fieldLabel: 'city', value: this.props.profile.city, index: '5', updateProfile: this.props.updateProfile })
+	        React.createElement(ProfileDataField, { label: 'Prénom', fieldLabel: 'firstname', value: this.props.profile.firstname, index: '1', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'Nom', fieldLabel: 'lastname', value: this.props.profile.lastname, index: '2', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'Âge', fieldLabel: 'age', value: this.props.profile.age + " ans", index: '3', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'Adresse', fieldLabel: 'address', value: this.props.profile.address, index: '5', updateProfile: this.props.updateProfile }),
+	        React.createElement(ProfileDataField, { label: 'Ville', fieldLabel: 'city', value: this.props.profile.city, index: '6', updateProfile: this.props.updateProfile })
 	      )
 	    );
 	  }
@@ -2936,13 +2967,11 @@
 
 	    var hours = new Date().getHours();
 
-	    console.log(hours);
-
 	    if (hours > 5 && hours <= 10) {
 	      background = "/images/user-background-morning.jpg";
-	    } else if (hours < 17) {
+	    } else if (hours > 10 && hours < 17) {
 	      background = "/images/user-background-day.jpg";
-	    } else if (hours <= 20) {
+	    } else if (hours >= 20 && hours <= 20) {
 	      background = "/images/user-background-evening.jpg";
 	    } else {
 	      background = "/images/user-background-night.jpg";
@@ -3575,24 +3604,6 @@
 	  },
 	  render: function render() {
 
-	    // var users = [
-	    //   {name: "Chuck Norris"},
-	    //   {name: "Jean CLaude VanDamme"},
-	    //   {name: "Steven Seagal"},
-	    //   {name: "Kurt Russel"},
-	    //   {name: "Jon Snow"},
-	    //   {name: "Beyonce"},
-	    //   {name: "John Rambo"},
-	    //   {name: "Chuck Norris"},
-	    //   {name: "Jean CLaude VanDamme"},
-	    //   {name: "Steven Seagal"},
-	    //   {name: "Kurt Russel"},
-	    //   {name: "Jon Snow"},
-	    //   {name: "Beyonce"},
-	    //   {name: "John Rambo"}
-	    // ];
-	    //
-
 	    var users = this.state.users;
 
 	    return React.createElement(
@@ -3612,7 +3623,7 @@
 	              { className: 'tabs transparent' },
 	              React.createElement(
 	                'li',
-	                { className: 'tab col s3' },
+	                { className: 'tab col s6' },
 	                React.createElement(
 	                  'a',
 	                  { className: 'active', href: '#users' },
@@ -3621,29 +3632,11 @@
 	              ),
 	              React.createElement(
 	                'li',
-	                { className: 'tab col s3' },
+	                { className: 'tab col s6' },
 	                React.createElement(
 	                  'a',
 	                  { href: '#stats' },
 	                  'Statistiques'
-	                )
-	              ),
-	              React.createElement(
-	                'li',
-	                { className: 'tab col s3' },
-	                React.createElement(
-	                  'a',
-	                  { href: '#test3' },
-	                  'Test 3'
-	                )
-	              ),
-	              React.createElement(
-	                'li',
-	                { className: 'tab col s3' },
-	                React.createElement(
-	                  'a',
-	                  { href: '#test4' },
-	                  'Test 4'
 	                )
 	              )
 	            )
@@ -3656,7 +3649,7 @@
 	          React.createElement(
 	            'div',
 	            { id: 'stats', className: 'col s12' },
-	            React.createElement(Stats, null)
+	            React.createElement(Stats, { users: users })
 	          ),
 	          React.createElement(
 	            'div',
@@ -3728,27 +3721,58 @@
 	var React = __webpack_require__(3);
 	var moment = __webpack_require__(43);
 	var browserHistory = __webpack_require__(5).browserHistory;
+	var UserService = __webpack_require__(17);
 
 	var UserListItem = React.createClass({
 	  displayName: 'UserListItem',
 	  getInitialState: function getInitialState() {
-	    return {};
+	    return {
+	      user: this.props
+	    };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.setState({
+	      user: nextProps
+	    });
 	  },
 	  displayProfile: function displayProfile() {
 	    browserHistory.push("/profile/" + this.props._id);
 	  },
-	  render: function render() {
+	  handleSwitch: function handleSwitch(e) {
 
-	    console.log(this.props);
+	    var user = jQuery.extend({}, this.state.user);
 
-	    var registerDate = moment(this.props.created_at);
-
-	    var url = "";
-	    if (this.props.avatar) {
-	      url = this.props.avatar.replace("/upload/", "/upload/w_42,h_42,c_fill/");
+	    if (user.role % 10 == 0) {
+	      user.role = parseInt(user.role, 10) / 10;
+	      console.log(user.role);
+	    } else {
+	      user.role = parseInt(user.role, 10) * 10;
+	      console.log(user.role);
 	    }
 
-	    var friendships = this.props.friends;
+	    var updatedFields = {
+	      role: user.role
+	    };
+
+	    var self = this;
+
+	    UserService.update(user._id, updatedFields, function () {
+
+	      self.setState({
+	        user: user
+	      });
+	    });
+	  },
+	  render: function render() {
+
+	    var registerDate = moment(this.state.created_at);
+
+	    var url = "";
+	    if (this.state.user.avatar) {
+	      url = this.state.user.avatar.replace("/upload/", "/upload/w_42,h_42,c_fill/");
+	    }
+
+	    var friendships = this.state.user.friends;
 	    var friendsNumber = 0,
 	        sentInvitesNumber = 0,
 	        receivedInvitesNumber = 0;
@@ -3757,12 +3781,14 @@
 	      if (friendships[i].status == "accepted") friendsNumber++;else if (friendships[i].status == "pending") receivedInvitesNumber++;else if (friendships[i].status == "sentRequest") sentInvitesNumber++;
 	    }
 
+	    var blocked = false;
 	    var cssClass = "collection-item avatar";
 
-	    if (this.props.role == 2) {
+	    if (this.state.user.role == 2) {
 	      cssClass += " admin";
-	    } else if (this.props.role == 3) {
+	    } else if (this.state.user.role % 10 == 0) {
 	      cssClass += " blocked";
+	      blocked = true;
 	    }
 
 	    return React.createElement(
@@ -3776,7 +3802,7 @@
 	      React.createElement(
 	        'span',
 	        { className: 'title', style: { fontWeight: "bold" } },
-	        this.props.firstname + " " + this.props.lastname
+	        this.state.user.firstname + " " + this.state.user.lastname
 	      ),
 	      React.createElement(
 	        'p',
@@ -3808,6 +3834,17 @@
 	        )
 	      ),
 	      React.createElement(
+	        'div',
+	        { className: 'switch' },
+	        React.createElement(
+	          'label',
+	          null,
+	          React.createElement('input', { type: 'checkbox', checked: blocked, onChange: this.handleSwitch, ref: 'switch' }),
+	          React.createElement('span', { className: 'lever' }),
+	          'Bloqué'
+	        )
+	      ),
+	      React.createElement(
 	        'a',
 	        { onClick: this.displayProfile, className: 'secondary-content' },
 	        React.createElement(
@@ -3833,7 +3870,64 @@
 	var Stats = React.createClass({
 	  displayName: "Stats",
 	  getInitialState: function getInitialState() {
-	    return {};
+	    return {
+	      users: this.props.users || []
+	    };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    this.setState({
+	      users: nextProps.users
+	    });
+	  },
+	  componentDidUpdate: function componentDidUpdate() {
+
+	    var cat1 = 0,
+	        cat2 = 0,
+	        cat3 = 0,
+	        cat4 = 0;
+	    var cat1Ratio = 0,
+	        cat2Ratio = 0,
+	        cat3Ratio = 0,
+	        cat4Ratio = 0;
+	    var total = 0;
+	    for (var i = 0; i < this.state.users.length; i++) {
+	      var user = this.state.users[i];
+	      if (user.age) {
+	        total++;
+	        if (user.age <= 18) cat1++;else if (user.age <= 30) cat2++;else if (user.age <= 50) cat3++;else cat4++;
+	      }
+	    }
+
+	    cat1Ratio = Math.round(cat1 / total * 100);
+	    cat2Ratio = Math.round(cat2 / total * 100);
+	    cat3Ratio = Math.round(cat3 / total * 100);
+	    cat4Ratio = Math.round(cat4 / total * 100);
+
+	    var chart = new CanvasJS.Chart("chartContainer", {
+	      title: {
+	        text: "Répartition des utilisateurs par tranche d'âge",
+	        fontFamily: "Impact",
+	        fontWeight: "normal"
+	      },
+
+	      legend: {
+	        verticalAlign: "bottom",
+	        horizontalAlign: "center"
+	      },
+	      data: [{
+	        //startAngle: 45,
+	        indexLabelFontSize: 20,
+	        indexLabelFontFamily: "Garamond",
+	        indexLabelFontColor: "darkgrey",
+	        indexLabelLineColor: "darkgrey",
+	        indexLabelPlacement: "outside",
+	        type: "doughnut",
+	        showInLegend: true,
+	        dataPoints: [{ y: cat1Ratio, legendText: "Moins de 18 ans " + cat1Ratio + "%", indexLabel: "Moins de 18 ans " + cat1Ratio + "%" }, { y: cat2Ratio, legendText: "Entre 18 et 30 ans " + cat2Ratio + "%", indexLabel: "Entre 18 et 30 ans " + cat2Ratio + "%" }, { y: cat3Ratio, legendText: "Entre 30 et 50 ans " + cat3Ratio + "%", indexLabel: "Entre 30 et 50 ans " + cat3Ratio + "%" }, { y: cat4Ratio, legendText: "50 ans et plus " + cat4Ratio + "%", indexLabel: "50 ans et plus " + cat4Ratio + "%" }]
+	      }]
+	    });
+
+	    chart.render();
 	  },
 	  render: function render() {
 
@@ -3844,6 +3938,11 @@
 	        "h1",
 	        { style: {} },
 	        "Statistiques"
+	      ),
+	      React.createElement(
+	        "div",
+	        null,
+	        React.createElement("div", { id: "chartContainer", style: { height: "300px", width: "100%" } })
 	      )
 	    );
 	  }

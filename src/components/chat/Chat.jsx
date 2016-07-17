@@ -30,7 +30,11 @@ var Chat = React.createClass({
         };
 
         var messages = this.state.messages;
-        messages.push(newMessage);
+        messages.push({
+            created_by: {_id: localStorage.getItem("userId")},
+            created_at: new Date().getTime(),
+            body: this.refs.messageInput.value
+        });
         this.setState({
             messages: messages
         });
@@ -54,7 +58,7 @@ var Chat = React.createClass({
     },
 
     componentWillUnmount() {
-        clearInterval(this.refreshInterval);  
+        clearTimeout(this.refreshInterval)
     },
 
     openChat(callback) {
@@ -65,8 +69,7 @@ var Chat = React.createClass({
             if(result && result.discussion) {
 
                 self.setState({
-                    id: result.discussion._id,
-                    messages: result.discussion.messages
+                    id: result.discussion._id
                 });
 
                 callback();
@@ -77,16 +80,20 @@ var Chat = React.createClass({
     startRefreshInterval() {
 
         var self = this;
-        this.refreshInterval = setInterval(function() {
-            ChatService.get(self.state.id, function(result) {
+        var timer;
+
+        this.refreshInterval = setTimeout(delay, 0);
+        function delay() {
+          ChatService.get(self.state.id, function(result) {
                 if (result && result.discussion) {
+
                     self.setState({
                         messages: result.discussion.messages
                     });
                 }
             });
-        }, 3000);
-
+          self.refreshInterval = setTimeout(delay, 3000);
+        }
     },
 
     render() {
@@ -95,21 +102,21 @@ var Chat = React.createClass({
         var targetName = this.state.target.firstname + " " + this.state.target.lastname;
 
         return (
-            <div style={{width: "250px", height: "360px", position: "fixed", bottom: 0, right: "20px", margin: 0, padding: 0}} className="grey lighten-5 hoverable">
-                <div className="green" style={{width:"100%", height: "35px", margin: 0}}>
-                    <div className="white-text left" style={{width: "80%", height: "35px", lineHeight: "35px", paddingLeft: "10px"}}>{targetName}</div>
-                    <div onClick={this.onClose} className="waves-effect waves-light btn right green" style={{width: "34px", height: "34px", padding: 0}}><i className="material-icons small white-text">close</i></div>
+            <div id="chatContainer" className="grey lighten-5 hoverable">
+                <div className="chatTop green accent-4" >
+                    <div className="white-text left username">{targetName}</div>
+                    <div onClick={this.onClose} className="closeButton waves-effect waves-light btn right light-blue darken-3"><i className="material-icons small white-text">close</i></div>
                 </div>
                 
-                <div  style={{width: "250px", height: "320px", margin: "0 auto", padding: 0}}>
+                <div className="chatBody" style={{}}>
 
-                    <div id="chatBody" style={{display:"block", width: "100%", height: "260px", margin: 0, padding: 0, overflowX: "scroll"}}>
+                    <div className="messagesListContainer" >
                         <Messages messages={this.state.messages} />
                     </div>
-                    <div style={{display:"block", width: "100%", height: "40px"}}>
-                        <form onSubmit={this.submitMessage}>
-                            <div className="input-field" style={{borderTop: "2px solid #202020"}}>
-                              <input type="text" placeholder="Ton message..." ref="messageInput" style={{paddingLeft: "10px"}}/>
+                    <div className="chatBottom" style={{}}>
+                        <form id= "chatInputForm" onSubmit={this.submitMessage}>
+                            <div className="input-field" >
+                              <input type="text" placeholder="Ton message..." ref="messageInput"/>
                             </div>
                         </form>
                     </div>

@@ -86,7 +86,7 @@ var NavBar = React.createClass({
   },
 
   displayHome() {
-    browserHistory.push('/home');
+    browserHistory.push('/');
   },
 
   logout() {
@@ -122,14 +122,14 @@ var NavBar = React.createClass({
       }
 
       let adminControl = <div />;
-      if (this.props.user.role == 2) {
+      if (this.props.user.role == "2") {
         adminControl = <a onClick={this.displayAdmin} className="adminControl"><i className="material-icons">settings</i>Administration</a>
       }
 
       components = (
 
         <div className="center" >
-          <a onClick={this.displayHome}  className="brand-logo">minibook</a>
+          <a onClick={this.displayHome}  className="brand-logo pointer">minibook</a>
           {adminControl}
           <NavBarSearch />
           <ul className="hide-on-med-and-down" style={{position: "absolute", top: 0, right: 0}}>

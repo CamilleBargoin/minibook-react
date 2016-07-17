@@ -210,15 +210,13 @@ var MyProfile = React.createClass({
 
     const hours = new Date().getHours();
 
-    console.log(hours);
-
     if (hours > 5 && hours<= 10) {
       background = "/images/user-background-morning.jpg";
     }
-    else if (hours < 17) {
+    else if (hours > 10 && hours < 17) {
       background = "/images/user-background-day.jpg";
     }
-    else if (hours <= 20) {
+    else if (hours >= 20 && hours <= 20) {
       background = "/images/user-background-evening.jpg";
     }
     else {

@@ -19,12 +19,24 @@ var Messages = React.createClass({
 
 
         var texts = this.state.messages.map(function(message, i) {
+            console.log(message);
+            let avatar = "";
+
+            if (message.created_by.avatar)
+              avatar = message.created_by.avatar.replace("/upload/", "/upload/w_30,h_30,c_fill/");
+
+          let className = "messageContainer";
 
 
-            if (message.created_by == localStorage.getItem("userId")) {
-                return <p key= {i}>{message.body}</p>
+            if (message.created_by._id != localStorage.getItem("userId")) {
+               className += " stickRight";
             }
-            return <p style={{textAlign:"right", width: "100%"}} key={i}> {message.body} </p>; 
+       
+            return <div className={className} key={i}>
+                        <img src={avatar} className="circle" alt=""/>
+                        <p className="message">{message.body}</p> 
+                    </div>; 
+            
         });
 
         return (
