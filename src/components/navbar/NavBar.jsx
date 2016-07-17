@@ -134,7 +134,6 @@ var NavBar = React.createClass({
           <NavBarSearch />
           <ul className="hide-on-med-and-down" style={{position: "absolute", top: 0, right: 0}}>
             <li><a onClick={this.displayProfile}><img src={url} alt="" className="navbar-avatar circle" />{name}</a></li>
-            <li><a onClick={this.props.openChat} href="#">test chat</a></li>
             <li id="showRequestsButton" style={{position: "relative"}}><a> <i onClick={this.showRequests}  className="material-icons">group</i><div style={display} className="requestsBadge">{this.requests.length}</div></a></li>
             <li><a onClick={this.displayInbox} ><i className="material-icons">email</i></a></li>
             <li><a onClick={this.logout} ><i className="material-icons">exit_to_app</i></a></li>

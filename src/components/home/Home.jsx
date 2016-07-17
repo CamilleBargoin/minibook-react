@@ -26,6 +26,7 @@ var Home = React.createClass({
 
   componentDidMount() {
       // this.getUser();
+      
   },
 
   refreshState(stateProperty) {
@@ -47,10 +48,21 @@ var Home = React.createClass({
   },
 
 
-  openChat() {
-    this.setState({
-      chat: true
-    });
+  openChat(user) {
+
+    if (this.state.chat) {
+      alert("un seul chat à la fois !");
+    }
+    else {
+      this.setState({
+        chat: {target: user}
+      });
+      
+    }
+
+
+
+
   },
 
   closeChat() {
@@ -61,21 +73,15 @@ var Home = React.createClass({
 
   render() {
 
-    var chat;
+    var chat = <div />;
 
     if (this.state.chat)
-      chat = <Chat name="Chuck Norris" closeChat={this.closeChat}/>;
-    else
-      chat = <div></div>;
-
+      chat = <Chat target={this.state.chat.target} closeChat={this.closeChat}/>
 
     return (
       <div>
-         {/*<NavBar openChat={this.openChat} search="true" user={this.state.user} refresh={this.refreshState}/>*/}
-         <FriendsGrid user={this.state.user} />
-            {chat}
-
-          {/*<Footer />*/}
+         <FriendsGrid user={this.state.user} openChat={this.openChat} />
+          {chat}
       </div>
     );
   }

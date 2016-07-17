@@ -160,12 +160,12 @@
 	var App = __webpack_require__(13);
 
 	var Home = __webpack_require__(20);
-	var UserProfile = __webpack_require__(26);
-	var MyProfile = __webpack_require__(38);
-	var Inbox = __webpack_require__(39);
-	var Admin = __webpack_require__(46);
-	var Logout = __webpack_require__(50);
-	var Forbidden = __webpack_require__(51);
+	var UserProfile = __webpack_require__(27);
+	var MyProfile = __webpack_require__(39);
+	var Inbox = __webpack_require__(40);
+	var Admin = __webpack_require__(47);
+	var Logout = __webpack_require__(51);
+	var Forbidden = __webpack_require__(52);
 
 	var NoMatch = React.createClass({
 	  displayName: 'NoMatch',
@@ -915,15 +915,6 @@
 	          ),
 	          React.createElement(
 	            'li',
-	            null,
-	            React.createElement(
-	              'a',
-	              { onClick: this.props.openChat, href: '#' },
-	              'test chat'
-	            )
-	          ),
-	          React.createElement(
-	            'li',
 	            { id: 'showRequestsButton', style: { position: "relative" } },
 	            React.createElement(
 	              'a',
@@ -1350,6 +1341,7 @@
 	  },
 	  componentDidMount: function componentDidMount() {
 	    // this.getUser();
+
 	  },
 	  refreshState: function refreshState(stateProperty) {
 	    switch (stateProperty) {
@@ -1367,10 +1359,15 @@
 	      });
 	    });
 	  },
-	  openChat: function openChat() {
-	    this.setState({
-	      chat: true
-	    });
+	  openChat: function openChat(user) {
+
+	    if (this.state.chat) {
+	      alert("un seul chat à la fois !");
+	    } else {
+	      this.setState({
+	        chat: { target: user }
+	      });
+	    }
 	  },
 	  closeChat: function closeChat() {
 	    this.setState({
@@ -1379,14 +1376,14 @@
 	  },
 	  render: function render() {
 
-	    var chat;
+	    var chat = React.createElement('div', null);
 
-	    if (this.state.chat) chat = React.createElement(Chat, { name: 'Chuck Norris', closeChat: this.closeChat });else chat = React.createElement('div', null);
+	    if (this.state.chat) chat = React.createElement(Chat, { target: this.state.chat.target, closeChat: this.closeChat });
 
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(FriendsGrid, { user: this.state.user }),
+	      React.createElement(FriendsGrid, { user: this.state.user, openChat: this.openChat }),
 	      chat
 	    );
 	  }
@@ -1546,14 +1543,15 @@
 
 	        // this.socket = io("http://localhost:1337");
 	        //
-	        console.log(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
-	        this.socket = io.connect(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
+	        // console.log(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
+	        // this.socket = io.connect(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
 
-	        this.socket.emit('room', nextProps.user._id);
+	        // this.socket.emit('room', nextProps.user._id);
 
-	        this.socket.on('user login', this.updateFriendOnlineStatus);
-	        this.socket.on('user logout', this.updateFriendOnlineStatus);
-	        this.socket.on('new friend', this.updateFriendList);
+	        // this.socket.on('user login', this.updateFriendOnlineStatus);
+	        // this.socket.on('user logout', this.updateFriendOnlineStatus);
+	        // this.socket.on('new friend', this.updateFriendList);     
+
 	      });
 	    }
 	  },
@@ -1582,9 +1580,10 @@
 	  },
 	  render: function render() {
 
+	    var self = this;
 	    var friendBoxes = this.state.friendships.map(function (friendship, i) {
 	      if (friendship.status == "accepted") {
-	        return React.createElement(FriendBox, { friendship: friendship, key: i });
+	        return React.createElement(FriendBox, { friendship: friendship, key: i, openChat: self.props.openChat });
 	      }
 	    });
 
@@ -1620,6 +1619,11 @@
 	    $('.friendBox.tooltipped').tooltip("remove");
 	    browserHistory.push('/profile/' + this.props.friendship.user._id);
 	  },
+	  openChat: function openChat(e) {
+	    e.stopPropagation();
+
+	    this.props.openChat(this.props.friendship.user);
+	  },
 	  render: function render() {
 
 	    var lastPost = this.props.friendship.user.last_post || "";
@@ -1652,7 +1656,7 @@
 	      React.createElement('div', { className: 'connexionStatus', style: { backgroundColor: connectedColor } }),
 	      React.createElement(
 	        'p',
-	        null,
+	        { onClick: this.openChat },
 	        this.props.friendship.user.firstname + " " + this.props.friendship.user.lastname
 	      )
 	    );
@@ -1668,37 +1672,89 @@
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var Messages = __webpack_require__(25);
+	var ChatService = __webpack_require__(25);
+	var Messages = __webpack_require__(26);
 
 	var Chat = React.createClass({
 	    displayName: 'Chat',
 	    getInitialState: function getInitialState() {
 	        return {
-	            messages: []
+	            id: null,
+	            messages: [],
+	            target: this.props.target
 	        };
 	    },
+
+
+	    refreshInterval: null,
+
 	    onClose: function onClose() {
-	        this.props.closeChat(this.props.name);
+	        this.props.closeChat();
 	    },
 	    submitMessage: function submitMessage(e) {
 	        e.preventDefault();
+
+	        var newMessage = {
+	            created_by: localStorage.getItem("userId"),
+	            created_at: new Date().getTime(),
+	            body: this.refs.messageInput.value
+	        };
+
 	        var messages = this.state.messages;
-	        messages.push({ author: "me", text: this.refs.messageInput.value });
-	        this.setState({ messages: messages });
-	        this.refs.messageInput.value = "";
-	    },
-	    componentDidMount: function componentDidMount() {
+	        messages.push(newMessage);
+	        this.setState({
+	            messages: messages
+	        });
 
 	        var self = this;
-	        setTimeout(function () {
-	            var messages = self.state.messages;
-	            messages.push({ author: "Chuck", text: "HAHAHAHA" });
-	            self.setState({ messages: messages });
-	        }, 5000);
+	        ChatService.create(this.state.id, newMessage, function (result) {
+
+	            self.refs.messageInput.value = "";
+	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        var self = this;
+
+	        this.openChat(function () {
+	            self.startRefreshInterval();
+	        });
+	    },
+	    componentWillUnmount: function componentWillUnmount() {
+	        clearInterval(this.refreshInterval);
+	    },
+	    openChat: function openChat(callback) {
+
+	        var self = this;
+
+	        ChatService.openChat(this.state.target._id, function (result) {
+	            if (result && result.discussion) {
+
+	                self.setState({
+	                    id: result.discussion._id,
+	                    messages: result.discussion.messages
+	                });
+
+	                callback();
+	            }
+	        });
+	    },
+	    startRefreshInterval: function startRefreshInterval() {
+
+	        var self = this;
+	        this.refreshInterval = setInterval(function () {
+	            ChatService.get(self.state.id, function (result) {
+	                if (result && result.discussion) {
+	                    self.setState({
+	                        messages: result.discussion.messages
+	                    });
+	                }
+	            });
+	        }, 3000);
 	    },
 	    render: function render() {
 
 	        var messages = this.state.messages;
+	        var targetName = this.state.target.firstname + " " + this.state.target.lastname;
 
 	        return React.createElement(
 	            'div',
@@ -1709,7 +1765,7 @@
 	                React.createElement(
 	                    'div',
 	                    { className: 'white-text left', style: { width: "80%", height: "35px", lineHeight: "35px", paddingLeft: "10px" } },
-	                    this.props.name
+	                    targetName
 	                ),
 	                React.createElement(
 	                    'div',
@@ -1726,7 +1782,7 @@
 	                { style: { width: "250px", height: "320px", margin: "0 auto", padding: 0 } },
 	                React.createElement(
 	                    'div',
-	                    { id: 'chatBody', style: { display: "block", width: "100%", height: "260px", margin: 0, padding: 0 } },
+	                    { id: 'chatBody', style: { display: "block", width: "100%", height: "260px", margin: 0, padding: 0, overflowX: "scroll" } },
 	                    React.createElement(Messages, { messages: this.state.messages })
 	                ),
 	                React.createElement(
@@ -1753,28 +1809,110 @@
 /* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	var config = __webpack_require__(11);
+
+	var ChatService = {
+
+	    openChat: function openChat(userId, callback) {
+
+	        var payload = {
+	            target: userId,
+	            sessionId: localStorage.getItem("sessionId")
+	        };
+
+	        this.sendHTTPRequest(config[process.env.NODE_ENV].api + '/discussions/open', 'POST', JSON.stringify(payload), callback);
+	    },
+
+	    get: function get(discussionId, callback) {
+
+	        var payload = {
+	            discussionId: discussionId,
+	            sessionId: localStorage.getItem("sessionId")
+	        };
+
+	        this.sendHTTPRequest(config[process.env.NODE_ENV].api + '/discussions/get', 'POST', JSON.stringify(payload), callback);
+	    },
+
+	    create: function create(discussionId, newMessage, callback) {
+
+	        var payload = {
+	            discussionId: discussionId,
+	            message: newMessage,
+	            sessionId: localStorage.getItem("sessionId")
+	        };
+
+	        this.sendHTTPRequest(config[process.env.NODE_ENV].api + '/discussions/newMessage', 'POST', JSON.stringify(payload), callback);
+	    },
+
+	    sendHTTPRequest: function sendHTTPRequest(url, method, payload, callback) {
+
+	        $.ajax({
+	            type: method,
+	            url: url,
+	            data: payload,
+	            dataType: 'json',
+	            contentType: "application/json",
+	            success: function success(data, status, jqXHR) {
+
+	                if (data) {
+
+	                    if (data.error) {
+	                        Materialize.toast(data.error, 3000, 'toastError');
+	                    } else {
+	                        if (callback) callback(data);
+	                    }
+	                } else {
+	                    Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	                }
+	            },
+	            error: function error(jqXHR, status, _error) {
+	                Materialize.toast("Une erreur est survenue :(", 3000, 'toastError');
+	            }
+	        });
+	    }
+	};
+
+	module.exports = ChatService;
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
 	"use strict";
 
 	var React = __webpack_require__(3);
 
 	var Messages = React.createClass({
 	    displayName: "Messages",
+	    getInitialState: function getInitialState() {
+	        return {
+	            messages: this.props.messages || []
+	        };
+	    },
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	        this.setState({
+	            messages: nextProps.messages
+	        });
+	    },
 	    render: function render() {
 
-	        var texts = this.props.messages.map(function (message, i) {
+	        var texts = this.state.messages.map(function (message, i) {
 
-	            if (message.author == "me") {
+	            if (message.created_by == localStorage.getItem("userId")) {
 	                return React.createElement(
 	                    "p",
-	                    null,
-	                    message.text
+	                    { key: i },
+	                    message.body
 	                );
 	            }
-	            return;
-	            React.createElement(
+	            return React.createElement(
 	                "p",
-	                { style: { textAlign: "right", width: "100%" } },
-	                message.text
+	                { style: { textAlign: "right", width: "100%" }, key: i },
+	                " ",
+	                message.body,
+	                " "
 	            );
 	        });
 
@@ -1789,7 +1927,7 @@
 	module.exports = Messages;
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1797,15 +1935,15 @@
 	var React = __webpack_require__(3);
 	var NavBar = __webpack_require__(15);
 	var Footer = __webpack_require__(21);
-	var PostInput = __webpack_require__(27);
-	var Wall = __webpack_require__(28);
-	var FriendsList = __webpack_require__(32);
-	var ProfileData = __webpack_require__(34);
+	var PostInput = __webpack_require__(28);
+	var Wall = __webpack_require__(29);
+	var FriendsList = __webpack_require__(33);
+	var ProfileData = __webpack_require__(35);
 	var config = __webpack_require__(11);
-	var PostsService = __webpack_require__(36);
+	var PostsService = __webpack_require__(37);
 	var UserService = __webpack_require__(17);
 
-	var ToolBar = __webpack_require__(37);
+	var ToolBar = __webpack_require__(38);
 
 	var UserProfile = React.createClass({
 	  displayName: 'UserProfile',
@@ -2016,7 +2154,7 @@
 	module.exports = UserProfile;
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2059,13 +2197,13 @@
 	module.exports = PostInput;
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
 	var React = __webpack_require__(3);
-	var WallPost = __webpack_require__(29);
+	var WallPost = __webpack_require__(30);
 
 	var Wall = React.createClass({
 	  displayName: "Wall",
@@ -2093,13 +2231,13 @@
 	module.exports = Wall;
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var PostCommentsList = __webpack_require__(30);
+	var PostCommentsList = __webpack_require__(31);
 
 	var WallPost = React.createClass({
 	  displayName: 'WallPost',
@@ -2166,13 +2304,13 @@
 	module.exports = WallPost;
 
 /***/ },
-/* 30 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var Comment = __webpack_require__(31);
+	var Comment = __webpack_require__(32);
 
 	var PostCommentsList = React.createClass({
 	  displayName: 'PostCommentsList',
@@ -2196,7 +2334,7 @@
 	module.exports = PostCommentsList;
 
 /***/ },
-/* 31 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2234,13 +2372,13 @@
 	module.exports = Comment;
 
 /***/ },
-/* 32 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var FriendsListItem = __webpack_require__(33);
+	var FriendsListItem = __webpack_require__(34);
 
 	var FriendsList = React.createClass({
 	  displayName: 'FriendsList',
@@ -2270,7 +2408,7 @@
 	module.exports = FriendsList;
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2320,13 +2458,13 @@
 	module.exports = FriendsListItem;
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var ProfileDataField = __webpack_require__(35);
+	var ProfileDataField = __webpack_require__(36);
 
 	var ProfileData = React.createClass({
 	  displayName: 'ProfileData',
@@ -2362,7 +2500,7 @@
 	module.exports = ProfileData;
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2452,7 +2590,7 @@
 	module.exports = ProfileDataField;
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2549,7 +2687,7 @@
 	module.exports = PostsService;
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -2610,7 +2748,7 @@
 	module.exports = ToolBar;
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2618,15 +2756,15 @@
 	var React = __webpack_require__(3);
 	var NavBar = __webpack_require__(15);
 	var Footer = __webpack_require__(21);
-	var PostInput = __webpack_require__(27);
-	var Wall = __webpack_require__(28);
-	var FriendsList = __webpack_require__(32);
-	var ProfileData = __webpack_require__(34);
+	var PostInput = __webpack_require__(28);
+	var Wall = __webpack_require__(29);
+	var FriendsList = __webpack_require__(33);
+	var ProfileData = __webpack_require__(35);
 	var config = __webpack_require__(11);
-	var PostsService = __webpack_require__(36);
+	var PostsService = __webpack_require__(37);
 	var UserService = __webpack_require__(17);
 
-	var ToolBar = __webpack_require__(37);
+	var ToolBar = __webpack_require__(38);
 
 	var MyProfile = React.createClass({
 	  displayName: 'MyProfile',
@@ -2856,17 +2994,17 @@
 	module.exports = MyProfile;
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
 	var NavBar = __webpack_require__(15);
-	var MessageList = __webpack_require__(40);
-	var MessageForm = __webpack_require__(43);
-	var Pagination = __webpack_require__(45);
-	var MessageService = __webpack_require__(44);
+	var MessageList = __webpack_require__(41);
+	var MessageForm = __webpack_require__(44);
+	var Pagination = __webpack_require__(46);
+	var MessageService = __webpack_require__(45);
 
 	var Inbox = React.createClass({
 	  displayName: 'Inbox',
@@ -2974,7 +3112,7 @@
 	module.exports = Inbox;
 
 /***/ },
-/* 40 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -2982,7 +3120,7 @@
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var React = __webpack_require__(3);
-	var MessageLine = __webpack_require__(41);
+	var MessageLine = __webpack_require__(42);
 
 	var MessageList = React.createClass({
 	  displayName: 'MessageList',
@@ -3018,13 +3156,13 @@
 	module.exports = MessageList;
 
 /***/ },
-/* 41 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var moment = __webpack_require__(42);
+	var moment = __webpack_require__(43);
 
 	var MessageLine = React.createClass({
 	  displayName: 'MessageLine',
@@ -3096,19 +3234,19 @@
 	module.exports = MessageLine;
 
 /***/ },
-/* 42 */
+/* 43 */
 /***/ function(module, exports) {
 
 	module.exports = require("moment");
 
 /***/ },
-/* 43 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var MessageService = __webpack_require__(44);
+	var MessageService = __webpack_require__(45);
 
 	var MessageForm = React.createClass({
 	  displayName: 'MessageForm',
@@ -3229,7 +3367,7 @@
 	module.exports = MessageForm;
 
 /***/ },
-/* 44 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3300,7 +3438,7 @@
 	module.exports = MessageService;
 
 /***/ },
-/* 45 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3395,15 +3533,15 @@
 	module.exports = Pagination;
 
 /***/ },
-/* 46 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
 	var NavBar = __webpack_require__(15);
-	var UserList = __webpack_require__(47);
-	var Stats = __webpack_require__(49);
+	var UserList = __webpack_require__(48);
+	var Stats = __webpack_require__(50);
 	var UserService = __webpack_require__(17);
 
 	var Admin = React.createClass({
@@ -3539,7 +3677,7 @@
 	module.exports = Admin;
 
 /***/ },
-/* 47 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3547,7 +3685,7 @@
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 	var React = __webpack_require__(3);
-	var UserListItem = __webpack_require__(48);
+	var UserListItem = __webpack_require__(49);
 
 	var UserList = React.createClass({
 	  displayName: 'UserList',
@@ -3582,13 +3720,13 @@
 	module.exports = UserList;
 
 /***/ },
-/* 48 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var React = __webpack_require__(3);
-	var moment = __webpack_require__(42);
+	var moment = __webpack_require__(43);
 	var browserHistory = __webpack_require__(5).browserHistory;
 
 	var UserListItem = React.createClass({
@@ -3685,7 +3823,7 @@
 	module.exports = UserListItem;
 
 /***/ },
-/* 49 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3714,7 +3852,7 @@
 	module.exports = Stats;
 
 /***/ },
-/* 50 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3775,7 +3913,7 @@
 	module.exports = Logout;
 
 /***/ },
-/* 51 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

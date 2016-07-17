@@ -41,14 +41,14 @@ var FriendGrid = React.createClass({
 
           // this.socket = io("http://localhost:1337");
           // 
-          console.log(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
-          this.socket = io.connect(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
+          // console.log(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
+          // this.socket = io.connect(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
           
-          this.socket.emit('room', nextProps.user._id);
+          // this.socket.emit('room', nextProps.user._id);
 
-          this.socket.on('user login', this.updateFriendOnlineStatus);
-          this.socket.on('user logout', this.updateFriendOnlineStatus);
-          this.socket.on('new friend', this.updateFriendList);      
+          // this.socket.on('user login', this.updateFriendOnlineStatus);
+          // this.socket.on('user logout', this.updateFriendOnlineStatus);
+          // this.socket.on('new friend', this.updateFriendList);      
 
           
         });  
@@ -88,10 +88,11 @@ var FriendGrid = React.createClass({
 
   render() {
 
+    var self = this;
     var friendBoxes = this.state.friendships.map(function(friendship, i) {
       if (friendship.status == "accepted") {
         return (
-           <FriendBox friendship={friendship} key={i} />
+           <FriendBox friendship={friendship} key={i} openChat={self.props.openChat}/>
         );
       }
     });

@@ -14,6 +14,15 @@ var FriendBox = React.createClass({
 
   },
 
+  openChat(e) {
+    e.stopPropagation();
+
+    this.props.openChat(this.props.friendship.user);
+
+
+
+  },
+
   render() {
 
     let lastPost = this.props.friendship.user.last_post || "";
@@ -72,7 +81,7 @@ var FriendBox = React.createClass({
         <div onClick={this.openFriendProfile} className="friendBox hoverable tooltipped" data-position="bottom" data-delay="50" data-tooltip={tooltip} style={{backgroundColor: backgroundColor}}>
           {avatar}
           <div className="connexionStatus" style={{backgroundColor: connectedColor}}/>
-          <p>{this.props.friendship.user.firstname + " " + this.props.friendship.user.lastname }</p>
+          <p onClick={this.openChat}>{this.props.friendship.user.firstname + " " + this.props.friendship.user.lastname }</p>
         </div>
     );
   }
