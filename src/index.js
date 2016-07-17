@@ -9,9 +9,7 @@ var Route = require('react-router').Route;
 var IndexRoute = require('react-router').IndexRoute;
 var routes = require('./routes.jsx');
 
-
 var css = require("./main.css");
-
 
 ReactDOM.render((
     <Router routes={routes} history={browserHistory} />

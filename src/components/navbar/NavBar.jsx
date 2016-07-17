@@ -110,9 +110,7 @@ var NavBar = React.createClass({
 
     let components;
 
-    if (localStorage.getItem('sessionId')) {
-
-      console.log(this.requests);
+    if (this.state.user && this.state.user._id) {
 
       const display = this.requests.length > 0 ? {display: "block"} : {display: "none"};
       const name = this.state.user ? this.state.user.firstname : "";

@@ -206,13 +206,32 @@ var MyProfile = React.createClass({
       avatar = <img src={url} />;
     }
 
+    let background = "/images/user-background-day.jpg";
+
+    const hours = new Date().getHours();
+
+    console.log(hours);
+
+    if (hours > 5 && hours<= 10) {
+      background = "/images/user-background-morning.jpg";
+    }
+    else if (hours < 17) {
+      background = "/images/user-background-day.jpg";
+    }
+    else if (hours <= 20) {
+      background = "/images/user-background-evening.jpg";
+    }
+    else {
+      background = "/images/user-background-night.jpg";
+    }
 
     return (
         <div id="userProfile">
 
           <div className="parallax-container" >
             <div className="profile_parallax" >
-              <img src="/images/user-background1.jpg" />
+              {/*<img src="/images/user-background-night.jpg" />*/}
+              <img src={background} />
             </div>
             <div id="profilePicture" className="hoverable" onClick={this.selectAvatar} >
               {avatar}

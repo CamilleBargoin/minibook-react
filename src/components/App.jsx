@@ -3,12 +3,13 @@ var NavLink = require('./NavLink.jsx');
 var IndexLink  =require('react-router').IndexLink;
 var NavBar = require('./navbar/NavBar.jsx');
 var UserService = require('../services/UserService.jsx');
+var Auth = require("../auth.js");
 
 var App = React.createClass({
 
   getInitialState() {
     return {
-      user: {}
+      user: null
     };
   },
 
@@ -18,15 +19,20 @@ var App = React.createClass({
   },
 
   getUser() {
+    const self = this;
 
-    console.log("GET USER");
-
-      const self = this;
+    Auth.loggedIn(function(data) {
       UserService.get(localStorage.getItem('userId'), function(user) {
           self.setState({
             user: user
           });
       });
+      
+    }, function(data) {
+      self.setState({
+        user: null
+      });
+    });
   },
 
   destroyUser() {

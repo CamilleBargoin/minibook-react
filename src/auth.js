@@ -17,12 +17,12 @@ var AuthService = {
 
               if (data.success) {
                 // console.log("loggedIn success");
-                // console.log(data);
-                success();
+                console.log(data);
+                success(data);
                 }
               else {
-                // console.log(data);
-                error();
+                console.log(data);
+                error(data);
               }
             },
             error: function(jqXHR, status, error) {

@@ -27,6 +27,8 @@ var Landing = React.createClass({
 
     console.log(this.props);
 
+  
+
     var box;
     if (this.state.showLogin) {
       box = (

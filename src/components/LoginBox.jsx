@@ -29,7 +29,7 @@ var LoginBox = React.createClass({
 
 
       self.props.refreshUser();
-      browserHistory.push('/home');
+      browserHistory.push('/');
     });
 
   },

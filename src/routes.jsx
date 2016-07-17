@@ -5,9 +5,7 @@ var IndexRoute = require('react-router').IndexRoute;
 var browserHistory = require('react-router').browserHistory;
 var Router = require('react-router').Router;
 
-// var TodosApp = require("./components/TodosApp.jsx");
-// var Users = require('./components/Users.jsx');
-var Landing = require('./components/Landing.jsx');
+var Auth = require('./components/Landing.jsx');
 var App = require('./components/App.jsx');
 
 var Home = require('./components/home/Home.jsx');
@@ -40,10 +38,10 @@ var auth = require("./auth.js");
 module.exports = (
   <Router history={browserHistory}>
     <Route path="/" component={App}>
-      <IndexRoute component={Landing}/>
+      <IndexRoute component={Home} onEnter={requireCredentials}/>
 
-      <Route path="/home" component={Home} onEnter={requireCredentials}>
-      </Route>
+      {/*<Route path="/home" component={Home} onEnter={requireCredentials}>
+      </Route>*/}
 
       <Route path="/profile" component={MyProfile} onEnter={requireCredentials}>
       </Route>
@@ -55,6 +53,9 @@ module.exports = (
       </Route>
 
       <Route path="/admin" component={Admin} onEnter={requireAdminCredentials}>
+      </Route>
+
+      <Route path="/auth" component={Auth} >
       </Route>
 
       <Route path="/logout" component={Logout} >
@@ -74,7 +75,7 @@ function requireCredentials(nextState, replace, next) {
   auth.loggedIn(function() {
     next();
   }, function() {
-    replace("/");
+    replace("/auth");
     next();
   }); 
   

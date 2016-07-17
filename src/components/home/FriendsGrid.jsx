@@ -40,13 +40,13 @@ var FriendGrid = React.createClass({
 
 
           // this.socket = io("http://localhost:1337");
-          // this.socket = io(config[process.env.NODE_ENV].websocket);
+          this.socket = io(config[process.env.NODE_ENV].websocket + ":" + localstorage.getItem('serverPort'));
           
-          // this.socket.emit('room', nextProps.user._id);
+          this.socket.emit('room', nextProps.user._id);
 
-          // this.socket.on('user login', this.updateFriendOnlineStatus);
-          // this.socket.on('user logout', this.updateFriendOnlineStatus);
-          // this.socket.on('new friend', this.updateFriendList);      
+          this.socket.on('user login', this.updateFriendOnlineStatus);
+          this.socket.on('user logout', this.updateFriendOnlineStatus);
+          this.socket.on('new friend', this.updateFriendList);      
 
           
         });  

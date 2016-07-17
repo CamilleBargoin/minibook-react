@@ -156,9 +156,7 @@
 	var browserHistory = __webpack_require__(5).browserHistory;
 	var Router = __webpack_require__(5).Router;
 
-	// var TodosApp = require("./components/TodosApp.jsx");
-	// var Users = require('./components/Users.jsx');
-	var Landing = __webpack_require__(7);
+	var Auth = __webpack_require__(7);
 	var App = __webpack_require__(13);
 
 	var Home = __webpack_require__(20);
@@ -200,12 +198,12 @@
 	  React.createElement(
 	    Route,
 	    { path: '/', component: App },
-	    React.createElement(IndexRoute, { component: Landing }),
-	    React.createElement(Route, { path: '/home', component: Home, onEnter: requireCredentials }),
+	    React.createElement(IndexRoute, { component: Home, onEnter: requireCredentials }),
 	    React.createElement(Route, { path: '/profile', component: MyProfile, onEnter: requireCredentials }),
 	    React.createElement(Route, { path: '/profile/:id', component: UserProfile, onEnter: requireCredentials }),
 	    React.createElement(Route, { path: '/inbox', component: Inbox, onEnter: requireCredentials }),
 	    React.createElement(Route, { path: '/admin', component: Admin, onEnter: requireAdminCredentials }),
+	    React.createElement(Route, { path: '/auth', component: Auth }),
 	    React.createElement(Route, { path: '/logout', component: Logout }),
 	    React.createElement(Route, { path: '/forbidden', component: Forbidden }),
 	    React.createElement(Route, { path: '*', component: NoMatch })
@@ -217,7 +215,7 @@
 	  auth.loggedIn(function () {
 	    next();
 	  }, function () {
-	    replace("/");
+	    replace("/auth");
 	    next();
 	  });
 	}
@@ -351,7 +349,7 @@
 	    Auth.login(this.state.email, this.state.password, function () {
 
 	      self.props.refreshUser();
-	      browserHistory.push('/home');
+	      browserHistory.push('/');
 	    });
 	  },
 	  render: function render() {
@@ -424,11 +422,11 @@
 
 	          if (data.success) {
 	            // console.log("loggedIn success");
-	            // console.log(data);
-	            _success();
+	            console.log(data);
+	            _success(data);
 	          } else {
-	            // console.log(data);
-	            error();
+	            console.log(data);
+	            error(data);
 	          }
 	        },
 	        error: function error(jqXHR, status, _error) {
@@ -547,7 +545,7 @@
 	module.exports = {
 	    "production": {
 	        "api": "http://minibook-express.herokuapp.com",
-	        "websocket": "http://minibook-express.herokuapp.com:80"
+	        "websocket": "http://minibook-express.herokuapp.com"
 	    },
 	    "development": {
 	        "api": "http://localhost:3000",
@@ -700,12 +698,13 @@
 	var IndexLink = __webpack_require__(5).IndexLink;
 	var NavBar = __webpack_require__(15);
 	var UserService = __webpack_require__(17);
+	var Auth = __webpack_require__(9);
 
 	var App = React.createClass({
 	  displayName: 'App',
 	  getInitialState: function getInitialState() {
 	    return {
-	      user: {}
+	      user: null
 	    };
 	  },
 	  componentDidMount: function componentDidMount() {
@@ -713,13 +712,17 @@
 	    this.getUser();
 	  },
 	  getUser: function getUser() {
-
-	    console.log("GET USER");
-
 	    var self = this;
-	    UserService.get(localStorage.getItem('userId'), function (user) {
+
+	    Auth.loggedIn(function (data) {
+	      UserService.get(localStorage.getItem('userId'), function (user) {
+	        self.setState({
+	          user: user
+	        });
+	      });
+	    }, function (data) {
 	      self.setState({
-	        user: user
+	        user: null
 	      });
 	    });
 	  },
@@ -860,9 +863,7 @@
 
 	    var components = void 0;
 
-	    if (localStorage.getItem('sessionId')) {
-
-	      console.log(this.requests);
+	    if (this.state.user && this.state.user._id) {
 
 	      var display = this.requests.length > 0 ? { display: "block" } : { display: "none" };
 	      var name = this.state.user ? this.state.user.firstname : "";
@@ -1542,14 +1543,13 @@
 	      }, function () {
 
 	        // this.socket = io("http://localhost:1337");
-	        // this.socket = io(config[process.env.NODE_ENV].websocket);
+	        this.socket = io(config[process.env.NODE_ENV].websocket + ":" + localstorage.getItem('serverPort'));
 
-	        // this.socket.emit('room', nextProps.user._id);
+	        this.socket.emit('room', nextProps.user._id);
 
-	        // this.socket.on('user login', this.updateFriendOnlineStatus);
-	        // this.socket.on('user logout', this.updateFriendOnlineStatus);
-	        // this.socket.on('new friend', this.updateFriendList);     
-
+	        this.socket.on('user login', this.updateFriendOnlineStatus);
+	        this.socket.on('user logout', this.updateFriendOnlineStatus);
+	        this.socket.on('new friend', this.updateFriendList);
 	      });
 	    }
 	  },
@@ -2790,6 +2790,22 @@
 	      avatar = React.createElement('img', { src: url });
 	    }
 
+	    var background = "/images/user-background-day.jpg";
+
+	    var hours = new Date().getHours();
+
+	    console.log(hours);
+
+	    if (hours > 5 && hours <= 10) {
+	      background = "/images/user-background-morning.jpg";
+	    } else if (hours < 17) {
+	      background = "/images/user-background-day.jpg";
+	    } else if (hours <= 20) {
+	      background = "/images/user-background-evening.jpg";
+	    } else {
+	      background = "/images/user-background-night.jpg";
+	    }
+
 	    return React.createElement(
 	      'div',
 	      { id: 'userProfile' },
@@ -2799,7 +2815,7 @@
 	        React.createElement(
 	          'div',
 	          { className: 'profile_parallax' },
-	          React.createElement('img', { src: '/images/user-background1.jpg' })
+	          React.createElement('img', { src: background })
 	        ),
 	        React.createElement(
 	          'div',
