@@ -1547,7 +1547,7 @@
 	        // this.socket = io("http://localhost:1337");
 	        //
 	        console.log(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
-	        this.socket = io(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
+	        this.socket = io.connect(config[process.env.NODE_ENV].websocket + ":" + localStorage.getItem('serverPort'));
 
 	        this.socket.emit('room', nextProps.user._id);
 
