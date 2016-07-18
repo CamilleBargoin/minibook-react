@@ -187,14 +187,14 @@ blockquote {
     position: relative;
     cursor: pointer;
 }
-
+/*
 .friendBox:hover {
     border: 2px solid #000;
     box-sizing: content-box;
     -moz-box-sizing: content-box;
     -webkit-box-sizing: content-box;
 }
-
+*/
 .friendBox p {
     bottom: 8px;
     line-height: 35px;
