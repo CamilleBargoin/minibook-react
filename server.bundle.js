@@ -1993,7 +1993,7 @@
 
 	    var self = this;
 	    this.findUserWallById(this.props.params.id, function (wall) {
-	      console.log(wall);
+
 	      self.setState({
 	        user: wall.user,
 	        wall: wall.posts
@@ -2128,9 +2128,9 @@
 
 	    if (hours > 5 && hours <= 10) {
 	      background = "/images/user-background-morning.jpg";
-	    } else if (hours < 17) {
+	    } else if (hours > 10 && hours < 17) {
 	      background = "/images/user-background-day.jpg";
-	    } else if (hours <= 20) {
+	    } else if (hours >= 20 && hours <= 20) {
 	      background = "/images/user-background-evening.jpg";
 	    } else {
 	      background = "/images/user-background-night.jpg";
@@ -2318,10 +2318,10 @@
 	      React.createElement(
 	        'form',
 	        { className: 'input-field col l6 offset-l3 m8 offset-m3 s10 offset-s2', onSubmit: this.postComment },
-	        React.createElement('input', { id: 'feedAComment', type: 'text', className: 'validate', ref: 'commentInput' }),
+	        React.createElement('input', { id: 'feedComment', type: 'text', className: 'validate', ref: 'commentInput' }),
 	        React.createElement(
 	          'label',
-	          { 'for': 'feedAComment' },
+	          { 'for': 'feedComment' },
 	          'Un commentaire ?'
 	        )
 	      )

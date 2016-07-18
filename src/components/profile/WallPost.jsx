@@ -53,8 +53,8 @@ var WallPost = React.createClass({
             
           </div>
           <form className="input-field col l6 offset-l3 m8 offset-m3 s10 offset-s2" onSubmit={this.postComment}>
-            <input id="feedAComment" type="text" className="validate" ref="commentInput" />
-            <label for="feedAComment">Un commentaire ?</label>
+            <input id="feedComment" type="text" className="validate" ref="commentInput" />
+            <label for="feedComment">Un commentaire ?</label>
           </form>
         </div>
     );
